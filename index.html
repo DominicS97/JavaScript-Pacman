@@ -12,6 +12,8 @@
 			// set constants
 			const FPS = 60; // framerate
 			const PAC_SIZE = 30; // pacman radius px
+			const GHOST_NUM = 3; // starting number of ghosts
+			const GHOST_SIZE = 30; // ghost radius px
 			const GAME_LIVES = 3; // start no lives
 			const SHOW_BOUNDING = false; // show collision
 			const TEXT_FADE = 2.5; // text fade time / s
@@ -26,12 +28,12 @@
 			var ctx = canv.getContext("2d");
 
 			// set up game parameters
-			var level, roids, ship, text, textAlpha, lives, score, scoreHigh;
+			var level, ghosts, pacman, text, textAlpha, lives, score, scoreHigh;
 			newGame();
 
 			//set up asteroid objects
-			var roids = [];
-			createAsteroidBelt();
+			var ghosts = [];
+			createGhostArmy();
 
 			// event handler
 			document.addEventListener("keydown", keyDown);
@@ -40,38 +42,28 @@
 			// game loop
 			setInterval(update, 1000 / FPS);
 
-			function createAsteroidBelt() {
-				roids = [];
+			function createGhostArmy() {
+				ghosts = [];
 				var x, y;
-				for (var i = 0; i < ROIDS_NUM + level; i++) {
+				for (var i = 0; i < GHOST_NUM; i++) {
 					do {
 						x = Math.floor(Math.random() * canv.width);
 						y = Math.floor(Math.random() * canv.height);
 					} while (
-						distBetweenPoints(ship.x, ship.y, x, y) <
-						ROIDS_SIZE * 2 + ship.r
+						distBetweenPoints(pacman.x, pacman.y, x, y) <
+						GHOST_SIZE * 2 + pacman.r
 					);
 					roids.push(newAsteroid(x, y, Math.ceil(ROIDS_SIZE / 2)));
 				}
 			}
 
 			function destroyAsteroid(index) {
-				var x = roids[index].x;
-				var y = roids[index].y;
-				var r = roids[index].r;
+				var x = ghosts[index].x;
+				var y = ghosts[index].y;
+				var r = ghosts[index].r;
 
-				// split asteroid in twain if needed
-				if (r == Math.ceil(ROIDS_SIZE / 2)) {
-					roids.push(newAsteroid(x, y, Math.ceil(ROIDS_SIZE / 4)));
-					roids.push(newAsteroid(x, y, Math.ceil(ROIDS_SIZE / 4)));
-					score += POINTS_LARGE;
-				} else if (r == Math.ceil(ROIDS_SIZE / 4)) {
-					roids.push(newAsteroid(x, y, Math.ceil(ROIDS_SIZE / 8)));
-					roids.push(newAsteroid(x, y, Math.ceil(ROIDS_SIZE / 8)));
-					score += POINTS_MED;
-				} else {
-					score += POINTS_SMALL;
-				}
+				// give score
+				score += POINTS_GHOST;
 
 				// destroy asteroid
 				roids.splice(index, 1);
@@ -80,12 +72,6 @@
 				if (score > scoreHigh) {
 					scoreHigh = score;
 					localStorage.setItem(SAVE_KEY_SCORE, scoreHigh);
-				}
-
-				// new level when final asteroid spliced
-				if (roids.length == 0) {
-					level++;
-					newLevel();
 				}
 			}
 
