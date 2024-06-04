@@ -17,7 +17,16 @@ var canv = document.getElementById("gameCanvas");
 var ctx = canv.getContext("2d");
 
 // set up game parameters
-var level, ghosts, pacman, text, textAlpha, lives, score, scoreHigh;
+var level,
+	ghosts,
+	pacman,
+	text,
+	textAlpha,
+	lives,
+	score,
+	scoreHigh,
+	keyDown,
+	keyUp;
 newGame();
 
 // event handler
@@ -44,26 +53,47 @@ function newGame() {
 	}
 }
 
-// draw game text
-if (textAlpha >= 0) {
+pacman = {
+	x: canv.width / 2,
+	y: canv.height / 2,
+	isInvuln: false,
+	xv: 0,
+	yv: 0,
+};
+
+// draw game
+function update() {
+	// draw background
+	ctx.fillStyle = "black";
+	ctx.fillRect(0, 0, canv.width, canv.height);
+
+	// draw pacman
+	ctx.fillStyle = "yellow";
+	ctx.beginPath();
+	ctx.arc(pacman.x, pacman.y, PAC_SIZE, 0, 2 * Math.PI);
+	ctx.fill();
+
+	// draw game text
+	if (textAlpha >= 0) {
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillStyle = "rgba(255, 255, 255, " + textAlpha + ")";
+		ctx.font = "small-caps " + TEXT_SIZE + "px dejavu sans mono";
+		ctx.fillText(text, canv.width / 2, canv.height * 0.75);
+		textAlpha -= 1.0 / TEXT_FADE / FPS;
+	}
+
+	// draw score
+	ctx.textAlign = "right";
+	ctx.textBaseline = "middle";
+	ctx.fillStyle = "white";
+	ctx.font = TEXT_SIZE + "px dejavu sans mono";
+	ctx.fillText(score, canv.width - PAC_SIZE / 2, PAC_SIZE);
+
+	// draw high score
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
-	ctx.fillStyle = "rgba(255, 255, 255, " + textAlpha + ")";
-	ctx.font = "small-caps " + TEXT_SIZE + "px dejavu sans mono";
-	ctx.fillText(text, canv.width / 2, canv.height * 0.75);
-	textAlpha -= 1.0 / TEXT_FADE / FPS;
+	ctx.fillStyle = "white";
+	ctx.font = TEXT_SIZE * 0.75 + "px dejavu sans mono";
+	ctx.fillText("BEST: " + scoreHigh, canv.width / 2, PAC_SIZE);
 }
-
-// draw score
-ctx.textAlign = "right";
-ctx.textBaseline = "middle";
-ctx.fillStyle = "white";
-ctx.font = TEXT_SIZE + "px dejavu sans mono";
-ctx.fillText(score, canv.width - PAC_SIZE / 2, PAC_SIZE);
-
-// draw high score
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.fillStyle = "white";
-ctx.font = TEXT_SIZE * 0.75 + "px dejavu sans mono";
-ctx.fillText("BEST: " + scoreHigh, canv.width / 2, PAC_SIZE);
