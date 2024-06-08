@@ -26,12 +26,31 @@ var level,
 	score,
 	scoreHigh,
 	keyDown,
-	keyUp;
+	keyUp,
+	keyLeft,
+	keyRight;
 newGame();
 
 // event handler
 document.addEventListener("keydown", keyDown);
 document.addEventListener("keyup", keyUp);
+
+function keyDown(/** @type {KeyboardEvent} */ ev) {
+	switch (ev.keyCode) {
+		case 37: // left arrow
+			pacman.a = Math.PI;
+			break;
+		case 38: // up arrow
+			pacman.a = (3 * Math.PI) / 2;
+			break;
+		case 39: // right arrow
+			pacman.a = 0;
+			break;
+		case 40: // down arrow
+			pacman.a = Math.PI / 2;
+			break;
+	}
+}
 
 // game loop
 setInterval(update, 1000 / FPS);
@@ -56,6 +75,7 @@ function newGame() {
 pacman = {
 	x: canv.width / 2,
 	y: canv.height / 2,
+	a: 0,
 	isInvuln: false,
 	xv: 0,
 	yv: 0,
@@ -70,7 +90,22 @@ function update() {
 	// draw pacman
 	ctx.fillStyle = "yellow";
 	ctx.beginPath();
-	ctx.arc(pacman.x, pacman.y, PAC_SIZE, 0, 2 * Math.PI);
+	ctx.arc(
+		pacman.x,
+		pacman.y,
+		PAC_SIZE,
+		Math.PI / 4 + pacman.a,
+		(5 * Math.PI) / 4 + pacman.a
+	);
+	ctx.fill();
+	ctx.beginPath();
+	ctx.arc(
+		pacman.x,
+		pacman.y,
+		PAC_SIZE,
+		(3 * Math.PI) / 4 + pacman.a,
+		(7 * Math.PI) / 4 + pacman.a
+	);
 	ctx.fill();
 
 	// draw game text
