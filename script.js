@@ -1,6 +1,7 @@
 // set constants
 const FPS = 60; // framerate
 const PAC_SIZE = 30; // pacman radius px
+const WAKKA_SPD = 90; // wakka speed (lower = faster)
 const GHOST_NUM = 3; // starting number of ghosts
 const GHOST_SIZE = 30; // ghost radius px
 const GAME_LIVES = 3; // start no lives
@@ -27,8 +28,8 @@ var level,
 	scoreHigh,
 	keyDown,
 	keyUp,
-	keyLeft,
-	keyRight;
+	wakka = Math.PI / 4,
+	wakkaDir = 0;
 newGame();
 
 // event handler
@@ -83,6 +84,19 @@ pacman = {
 
 // draw game
 function update() {
+	// cycle wakka
+	if (wakkaDir === 0 && wakka > 0.02) {
+		wakka = wakka - Math.PI / WAKKA_SPD;
+	} else if (wakka <= 0.02) {
+		wakka = wakka + Math.PI / WAKKA_SPD;
+		wakkaDir = 1;
+	} else if (wakkaDir === 1 && wakka < Math.PI / 4) {
+		wakka = wakka + Math.PI / WAKKA_SPD;
+	} else {
+		wakka = wakka - Math.PI / WAKKA_SPD;
+		wakkaDir = 0;
+	}
+
 	// draw background
 	ctx.fillStyle = "black";
 	ctx.fillRect(0, 0, canv.width, canv.height);
@@ -94,8 +108,8 @@ function update() {
 		pacman.x,
 		pacman.y,
 		PAC_SIZE,
-		Math.PI / 4 + pacman.a,
-		(5 * Math.PI) / 4 + pacman.a
+		wakka + pacman.a,
+		Math.PI + wakka + pacman.a
 	);
 	ctx.fill();
 	ctx.beginPath();
@@ -103,8 +117,8 @@ function update() {
 		pacman.x,
 		pacman.y,
 		PAC_SIZE,
-		(3 * Math.PI) / 4 + pacman.a,
-		(7 * Math.PI) / 4 + pacman.a
+		Math.PI - wakka + pacman.a,
+		2 * Math.PI - wakka + pacman.a
 	);
 	ctx.fill();
 
