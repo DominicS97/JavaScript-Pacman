@@ -1,7 +1,9 @@
 // set constants
 const FPS = 60; // framerate
-const PAC_SIZE = 30; // pacman radius px
-const WAKKA_SPD = 90; // wakka speed (lower = faster)
+const PAC_SIZE = 15; // pacman radius px
+const PAC_SPD = 180; // pacman speed modifier
+const GLOBAL_SPD = 1; // global speed modifier
+const WAKKA_SPD = 1.6; // wakka speed (lower = faster)
 const GHOST_NUM = 3; // starting number of ghosts
 const GHOST_SIZE = 30; // ghost radius px
 const GAME_LIVES = 3; // start no lives
@@ -38,17 +40,32 @@ document.addEventListener("keyup", keyUp);
 
 function keyDown(/** @type {KeyboardEvent} */ ev) {
 	switch (ev.keyCode) {
+		case 32: // space || reset
+			pacman.a = 0;
+			pacman.x = canv.width / 2;
+			pacman.y = canv.height / 2;
+			pacman.xv = 0;
+			pacman.yv = 0;
+			break;
 		case 37: // left arrow
 			pacman.a = Math.PI;
+			pacman.xv = -PAC_SPD * GLOBAL_SPD;
+			pacman.yv = 0;
 			break;
 		case 38: // up arrow
 			pacman.a = (3 * Math.PI) / 2;
+			pacman.yv = -PAC_SPD * GLOBAL_SPD;
+			pacman.xv = 0;
 			break;
 		case 39: // right arrow
 			pacman.a = 0;
+			pacman.xv = PAC_SPD * GLOBAL_SPD;
+			pacman.yv = 0;
 			break;
 		case 40: // down arrow
 			pacman.a = Math.PI / 2;
+			pacman.yv = PAC_SPD * GLOBAL_SPD;
+			pacman.xv = 0;
 			break;
 	}
 }
@@ -85,16 +102,32 @@ pacman = {
 // draw game
 function update() {
 	// cycle wakka
-	if (wakkaDir === 0 && wakka > 0.02) {
-		wakka = wakka - Math.PI / WAKKA_SPD;
-	} else if (wakka <= 0.02) {
-		wakka = wakka + Math.PI / WAKKA_SPD;
+	if (wakkaDir === 0 && wakka > 0) {
+		wakka = wakka - Math.PI / (WAKKA_SPD * FPS);
+	} else if (wakka <= 0) {
+		wakka = wakka + Math.PI / (WAKKA_SPD * FPS);
 		wakkaDir = 1;
 	} else if (wakkaDir === 1 && wakka < Math.PI / 4) {
-		wakka = wakka + Math.PI / WAKKA_SPD;
+		wakka = wakka + Math.PI / (WAKKA_SPD * FPS);
 	} else {
-		wakka = wakka - Math.PI / WAKKA_SPD;
+		wakka = wakka - Math.PI / (WAKKA_SPD * FPS);
 		wakkaDir = 0;
+	}
+
+	// move pacman
+	pacman.x += pacman.xv / FPS;
+	pacman.y += pacman.yv / FPS;
+
+	// handle edge of screen
+	if (pacman.x <= 0) {
+		pacman.x = canv.width;
+	} else if (pacman.x >= canv.width) {
+		pacman.x = 0;
+	}
+	if (pacman.y <= 0) {
+		pacman.y = canv.height;
+	} else if (pacman.y >= canv.height) {
+		pacman.y = 0;
 	}
 
 	// draw background
@@ -108,17 +141,31 @@ function update() {
 		pacman.x,
 		pacman.y,
 		PAC_SIZE,
-		wakka + pacman.a,
-		Math.PI + wakka + pacman.a
+		Math.PI / 2 + pacman.a,
+		(3 * Math.PI) / 2 + pacman.a
 	);
 	ctx.fill();
 	ctx.beginPath();
+	ctx.moveTo(pacman.x, pacman.y);
+	ctx.lineTo(pacman.x, pacman.y - Math.cos(pacman.a) * PAC_SIZE);
 	ctx.arc(
 		pacman.x,
 		pacman.y,
 		PAC_SIZE,
-		Math.PI - wakka + pacman.a,
+		(3 * Math.PI) / 2 + pacman.a,
 		2 * Math.PI - wakka + pacman.a
+	);
+	ctx.fill();
+	ctx.beginPath();
+	ctx.moveTo(pacman.x, pacman.y);
+	ctx.lineTo(pacman.x, pacman.y + Math.cos(pacman.a) * PAC_SIZE);
+	ctx.arc(
+		pacman.x,
+		pacman.y,
+		PAC_SIZE,
+		Math.PI / 2 + pacman.a,
+		wakka + pacman.a,
+		true
 	);
 	ctx.fill();
 
