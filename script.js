@@ -1,11 +1,12 @@
 // set constants
 const FPS = 60; // framerate
-const PAC_SIZE = 15; // pacman radius px
+const PAC_SIZE = 16; // pacman radius px
 const PAC_SPD = 180; // pacman speed modifier
 const GLOBAL_SPD = 1; // global speed modifier
 const WAKKA_SPD = 1.6; // wakka speed (lower = faster)
 const GHOST_NUM = 3; // starting number of ghosts
 const GHOST_SIZE = 30; // ghost radius px
+const WALL_WIDTH = 16; // wall width px
 const GAME_LIVES = 3; // start no lives
 const SHOW_BOUNDING = false; // show collision
 const TEXT_FADE = 2.5; // text fade time / s
@@ -20,9 +21,19 @@ var canv = document.getElementById("gameCanvas");
 var ctx = canv.getContext("2d");
 
 // set up game parameters
+class Wall {
+	constructor(x, y, dim, dir) {
+		this.x = x;
+		this.y = y;
+		this.dim = dim; // long dimension
+		this.dir = dir; // 1 = vertical, 0 = horizontal
+	}
+}
+
 var level,
 	ghosts,
 	pacman,
+	walls = [],
 	text,
 	textAlpha,
 	lives,
@@ -77,9 +88,16 @@ function distBetweenPoints(x1, y1, x2, y2) {
 	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
+function createLevel() {
+	const wall1 = new Wall(canv.width / 2 - 40, canv.height / 2, 60, 1);
+	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 40, 60, 0);
+	walls.push(wall1, wall2);
+}
+
 function newGame() {
 	score = 0;
 	lives = GAME_LIVES;
+	createLevel();
 
 	// get high score from local
 	var scoreStr = localStorage.getItem(SAVE_KEY_SCORE);
@@ -115,8 +133,50 @@ function update() {
 	}
 
 	// move pacman
-	pacman.x += pacman.xv / FPS;
-	pacman.y += pacman.yv / FPS;
+	// collision
+	function pacMover() {
+		for (let i = 0; i < walls.length; i++) {
+			let wall = walls[i];
+			if (wall.dir === 1) {
+				// test vertical wall
+				if (
+					wall.x + WALL_WIDTH / 2 >= pacman.x - PAC_SIZE &&
+					wall.x - WALL_WIDTH / 2 <= pacman.x + PAC_SIZE
+				) {
+					// test x-axis
+					pacman.xv = 0;
+				}
+				if (
+					wall.y - wall.dim / 2 >= pacman.y - PAC_SIZE &&
+					wall.y + wall.dim / 2 <= pacman.y + PAC_SIZE
+				) {
+					// text y-axis
+					pacman.yv = 0;
+				}
+				break;
+			} else {
+				// test horizontal wall
+				if (
+					wall.x + wall.dim / 2 >= pacman.x - PAC_SIZE &&
+					wall.x - wall.dim / 2 <= pacman.x + PAC_SIZE
+				) {
+					// test x-axis
+					pacman.xv = 0;
+				}
+				if (
+					wall.y - WALL_WIDTH / 2 >= pacman.y - PAC_SIZE &&
+					wall.y + WALL_WIDTH / 2 <= pacman.y + PAC_SIZE
+				) {
+					// text y-axis
+					pacman.yv = 0;
+				}
+				break;
+			}
+		}
+		pacman.x += pacman.xv / FPS;
+		pacman.y += pacman.yv / FPS;
+	}
+	pacMover();
 
 	// handle edge of screen
 	if (pacman.x <= 0) {
@@ -168,6 +228,29 @@ function update() {
 		true
 	);
 	ctx.fill();
+
+	// draw walls
+	for (let i = 0; i < walls.length; i++) {
+		let wall = walls[i];
+		ctx.fillStyle = "blue";
+		if (wall.dir === 1) {
+			ctx.beginPath();
+			ctx.moveTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
+			ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y - wall.dim / 2);
+			ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y - wall.dim / 2);
+			ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y + wall.dim / 2);
+			ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
+			ctx.fill();
+		} else {
+			ctx.beginPath();
+			ctx.moveTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
+			ctx.lineTo(wall.x - wall.dim / 2, wall.y - WALL_WIDTH / 2);
+			ctx.lineTo(wall.x + wall.dim / 2, wall.y - WALL_WIDTH / 2);
+			ctx.lineTo(wall.x + wall.dim / 2, wall.y + WALL_WIDTH / 2);
+			ctx.lineTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
+			ctx.fill();
+		}
+	}
 
 	// draw game text
 	if (textAlpha >= 0) {
