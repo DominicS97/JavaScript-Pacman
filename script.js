@@ -1,5 +1,6 @@
 // set constants
 const FPS = 60; // framerate
+const FUDGE = 0; // collision fudger px
 const PAC_SIZE = 16; // pacman radius px
 const PAC_SPD = 180; // pacman speed modifier
 const GLOBAL_SPD = 1; // global speed modifier
@@ -89,9 +90,11 @@ function distBetweenPoints(x1, y1, x2, y2) {
 }
 
 function createLevel() {
-	const wall1 = new Wall(canv.width / 2 - 40, canv.height / 2, 60, 1);
-	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 40, 60, 0);
-	walls.push(wall1, wall2);
+	const wall1 = new Wall(canv.width / 2 - 50, canv.height / 2, 96, 1);
+	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 50, 60, 0);
+	const wall3 = new Wall(canv.width / 2 + 50, canv.height / 2, 96, 1);
+	const wall4 = new Wall(canv.width / 2, canv.height / 2 - 100, 96, 0);
+	walls.push(wall1, wall2, wall3, wall4);
 }
 
 function newGame() {
@@ -135,44 +138,47 @@ function update() {
 	// move pacman
 	// collision
 	function pacMover() {
+		debugger;
+		// set variables for convenience
+		const uppery = pacman.y - PAC_SIZE;
+		const lowery = pacman.y + PAC_SIZE;
+		const rightx = pacman.x + PAC_SIZE;
+		const leftx = pacman.x - PAC_SIZE;
+		var walluppery, walllowery, wallrightx, wallleftx;
+		// loop over every wall
 		for (let i = 0; i < walls.length; i++) {
+			debugger;
 			let wall = walls[i];
-			if (wall.dir === 1) {
-				// test vertical wall
-				if (
-					wall.x + WALL_WIDTH / 2 >= pacman.x - PAC_SIZE &&
-					wall.x - WALL_WIDTH / 2 <= pacman.x + PAC_SIZE
-				) {
-					// test x-axis
-					pacman.xv = 0;
-				}
-				if (
-					wall.y - wall.dim / 2 >= pacman.y - PAC_SIZE &&
-					wall.y + wall.dim / 2 <= pacman.y + PAC_SIZE
-				) {
-					// text y-axis
-					pacman.yv = 0;
-				}
-				break;
+			if (wall.dir === 0) {
+				debugger;
+				walluppery = wall.y - WALL_WIDTH / 2;
+				walllowery = wall.y + WALL_WIDTH / 2;
+				wallrightx = wall.x + wall.dim / 2;
+				wallleftx = wall.x - wall.dim / 2;
+				debugger;
 			} else {
-				// test horizontal wall
+				debugger;
+				walluppery = wall.y - wall.dim / 2;
+				walllowery = wall.y + wall.dim / 2;
+				wallrightx = wall.x + WALL_WIDTH / 2;
+				wallleftx = wall.x - WALL_WIDTH / 2;
+				debugger;
+			}
+			// check if vertical face falls within range
+			if (walllowery + FUDGE >= uppery && walluppery - FUDGE <= lowery) {
+				// check if horizontal face falls within range
 				if (
-					wall.x + wall.dim / 2 >= pacman.x - PAC_SIZE &&
-					wall.x - wall.dim / 2 <= pacman.x + PAC_SIZE
+					wallleftx + FUDGE <= rightx &&
+					wallrightx + FUDGE >= leftx
 				) {
-					// test x-axis
+					pacman.x -= pacman.xv / FPS;
 					pacman.xv = 0;
-				}
-				if (
-					wall.y - WALL_WIDTH / 2 >= pacman.y - PAC_SIZE &&
-					wall.y + WALL_WIDTH / 2 <= pacman.y + PAC_SIZE
-				) {
-					// text y-axis
+					pacman.y -= pacman.yv / FPS;
 					pacman.yv = 0;
 				}
-				break;
 			}
 		}
+		debugger;
 		pacman.x += pacman.xv / FPS;
 		pacman.y += pacman.yv / FPS;
 	}
