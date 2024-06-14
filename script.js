@@ -2,7 +2,7 @@
 const FPS = 60; // framerate
 const FUDGE = 0; // collision fudger px
 const PAC_SIZE = 16; // pacman radius px
-const PAC_SPD = 180; // pacman speed modifier
+const PAC_SPD = 150; // pacman speed modifier
 const GLOBAL_SPD = 1; // global speed modifier
 const WAKKA_SPD = 1.6; // wakka speed (lower = faster)
 const GHOST_NUM = 3; // starting number of ghosts
@@ -34,6 +34,8 @@ class Wall {
 var level,
 	ghosts,
 	pacman,
+	startx = canv.width / 2,
+	starty = canv.height / 2 + 60,
 	walls = [],
 	text,
 	textAlpha,
@@ -54,8 +56,8 @@ function keyDown(/** @type {KeyboardEvent} */ ev) {
 	switch (ev.keyCode) {
 		case 32: // space || reset
 			pacman.a = 0;
-			pacman.x = canv.width / 2;
-			pacman.y = canv.height / 2;
+			pacman.x = startx;
+			pacman.y = starty;
 			pacman.xv = 0;
 			pacman.yv = 0;
 			break;
@@ -89,12 +91,16 @@ function distBetweenPoints(x1, y1, x2, y2) {
 	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
+// total width of passage = 38px // 1 = vertical, 0 = horizontal
 function createLevel() {
-	const wall1 = new Wall(canv.width / 2 - 50, canv.height / 2, 96, 1);
-	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 50, 60, 0);
-	const wall3 = new Wall(canv.width / 2 + 50, canv.height / 2, 96, 1);
-	const wall4 = new Wall(canv.width / 2, canv.height / 2 - 100, 96, 0);
-	walls.push(wall1, wall2, wall3, wall4);
+	const wall1 = new Wall(canv.width / 2 - 80, canv.height / 2, 66, 1);
+	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 33, 160, 0);
+	const wall3 = new Wall(canv.width / 2 + 80, canv.height / 2, 66, 1);
+	const wall4 = new Wall(canv.width / 2, canv.height / 2 - 33, 160, 0);
+	const wall5 = new Wall(canv.width / 2, canv.height / 2 + 87, 160, 0);
+	const wall6 = new Wall(canv.width / 2 - 134, canv.height / 2 + 58, 50, 1);
+	const wall7 = new Wall(canv.width / 2 - 188, canv.height / 2 + 58, 50, 1);
+	walls.push(wall1, wall2, wall3, wall4, wall5, wall6, wall7);
 }
 
 function newGame() {
@@ -112,8 +118,8 @@ function newGame() {
 }
 
 pacman = {
-	x: canv.width / 2,
-	y: canv.height / 2,
+	x: startx,
+	y: starty,
 	a: 0,
 	isInvuln: false,
 	xv: 0,
@@ -138,7 +144,6 @@ function update() {
 	// move pacman
 	// collision
 	function pacMover() {
-		debugger;
 		// set variables for convenience
 		const uppery = pacman.y - PAC_SIZE;
 		const lowery = pacman.y + PAC_SIZE;
@@ -147,22 +152,17 @@ function update() {
 		var walluppery, walllowery, wallrightx, wallleftx;
 		// loop over every wall
 		for (let i = 0; i < walls.length; i++) {
-			debugger;
 			let wall = walls[i];
 			if (wall.dir === 0) {
-				debugger;
 				walluppery = wall.y - WALL_WIDTH / 2;
 				walllowery = wall.y + WALL_WIDTH / 2;
 				wallrightx = wall.x + wall.dim / 2;
 				wallleftx = wall.x - wall.dim / 2;
-				debugger;
 			} else {
-				debugger;
 				walluppery = wall.y - wall.dim / 2;
 				walllowery = wall.y + wall.dim / 2;
 				wallrightx = wall.x + WALL_WIDTH / 2;
 				wallleftx = wall.x - WALL_WIDTH / 2;
-				debugger;
 			}
 			// check if vertical face falls within range
 			if (walllowery + FUDGE >= uppery && walluppery - FUDGE <= lowery) {
@@ -178,7 +178,6 @@ function update() {
 				}
 			}
 		}
-		debugger;
 		pacman.x += pacman.xv / FPS;
 		pacman.y += pacman.yv / FPS;
 	}
