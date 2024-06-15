@@ -27,7 +27,7 @@ class Wall {
 		this.x = x;
 		this.y = y;
 		this.dim = dim; // long dimension
-		this.dir = dir; // 1 = vertical, 0 = horizontal
+		this.dir = dir; // true = vertical, false = horizontal
 	}
 }
 
@@ -93,14 +93,194 @@ function distBetweenPoints(x1, y1, x2, y2) {
 
 // total width of passage = 38px // 1 = vertical, 0 = horizontal
 function createLevel() {
-	const wall1 = new Wall(canv.width / 2 - 80, canv.height / 2, 66, 1);
-	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 33, 160, 0);
-	const wall3 = new Wall(canv.width / 2 + 80, canv.height / 2, 66, 1);
-	const wall4 = new Wall(canv.width / 2, canv.height / 2 - 33, 160, 0);
-	const wall5 = new Wall(canv.width / 2, canv.height / 2 + 87, 160, 0);
-	const wall6 = new Wall(canv.width / 2 - 134, canv.height / 2 + 58, 50, 1);
-	const wall7 = new Wall(canv.width / 2 - 188, canv.height / 2 + 58, 50, 1);
-	walls.push(wall1, wall2, wall3, wall4, wall5, wall6, wall7);
+	const wall1 = new Wall(canv.width / 2 - 80, canv.height / 2, 82, true);
+	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 33, 160, false);
+	const wall3 = new Wall(canv.width / 2 + 80, canv.height / 2, 82, true);
+	const wall4 = new Wall(canv.width / 2, canv.height / 2 - 33, 160, false);
+	const wall5 = new Wall(canv.width / 2, canv.height / 2 + 87, 176, false);
+	const wall6 = new Wall(
+		canv.width / 2 - 134,
+		canv.height / 2 + 58,
+		72,
+		true
+	);
+	const wall7 = new Wall(
+		canv.width / 2 - 188,
+		canv.height / 2 + 58,
+		72,
+		true
+	);
+	const wall8 = new Wall(
+		canv.width / 2 - 246,
+		canv.height / 2 + 30,
+		100,
+		false
+	);
+	const wall9 = new Wall(
+		canv.width / 2 - 246,
+		canv.height / 2 - 24,
+		100,
+		false
+	);
+	const wall10 = new Wall(
+		canv.width / 2 - 246,
+		canv.height / 2 + 86,
+		100,
+		false
+	);
+	const wall11 = new Wall(canv.width / 2, canv.height / 2 + 116, 64, true);
+	const wall12 = new Wall(
+		canv.width / 2 - 188,
+		canv.height / 2 + 167,
+		70,
+		true
+	);
+	const wall13 = new Wall(
+		canv.width / 2 - 94,
+		canv.height / 2 + 140,
+		96,
+		false
+	);
+	const wall14 = new Wall(
+		canv.width / 2 - 215,
+		canv.height / 2 + 140,
+		54,
+		false
+	);
+	const wall15 = new Wall(
+		canv.width / 2 - 265,
+		canv.height / 2 + 194,
+		62,
+		false
+	);
+	const wall16 = new Wall(
+		canv.width / 2 - 134,
+		canv.height / 2 + 221,
+		68,
+		true
+	);
+	const wall17 = new Wall(
+		canv.width / 2 - 144,
+		canv.height / 2 + 248,
+		196,
+		false
+	);
+	const wall18 = new Wall(canv.width / 2, canv.height / 2 + 302, 592, false);
+	const wall19 = new Wall(
+		canv.width / 2 - 288,
+		canv.height / 2 + 194,
+		200,
+		true
+	);
+	const wall20 = new Wall(
+		canv.width / 2 + 288,
+		canv.height / 2 + 194,
+		200,
+		true
+	);
+	const wall21 = new Wall(
+		canv.width / 2 + 246,
+		canv.height / 2 + 30,
+		100,
+		false
+	);
+	const wall22 = new Wall(
+		canv.width / 2 + 246,
+		canv.height / 2 - 24,
+		100,
+		false
+	);
+	const wall23 = new Wall(
+		canv.width / 2 + 246,
+		canv.height / 2 + 86,
+		100,
+		false
+	);
+	const wall24 = new Wall(
+		canv.width / 2 + 134,
+		canv.height / 2 + 58,
+		72,
+		true
+	);
+	const wall25 = new Wall(
+		canv.width / 2 + 188,
+		canv.height / 2 + 58,
+		72,
+		true
+	);
+	const wall26 = new Wall(
+		canv.width / 2 + 188,
+		canv.height / 2 + 167,
+		70,
+		true
+	);
+	const wall27 = new Wall(
+		canv.width / 2 + 94,
+		canv.height / 2 + 140,
+		96,
+		false
+	);
+	const wall28 = new Wall(
+		canv.width / 2 + 215,
+		canv.height / 2 + 140,
+		54,
+		false
+	);
+	const wall29 = new Wall(
+		canv.width / 2 + 265,
+		canv.height / 2 + 194,
+		62,
+		false
+	);
+	const wall30 = new Wall(
+		canv.width / 2 + 134,
+		canv.height / 2 + 221,
+		68,
+		true
+	);
+	const wall31 = new Wall(
+		canv.width / 2 + 144,
+		canv.height / 2 + 248,
+		196,
+		false
+	);
+	const wall32 = new Wall(canv.width / 2, canv.height / 2 + 195, 176, false);
+	const wall33 = new Wall(canv.width / 2, canv.height / 2 + 224, 64, true);
+	walls.push(
+		wall1,
+		wall2,
+		wall3,
+		wall4,
+		wall5,
+		wall6,
+		wall7,
+		wall8,
+		wall9,
+		wall10,
+		wall11,
+		wall12,
+		wall13,
+		wall14,
+		wall15,
+		wall16,
+		wall17,
+		wall18,
+		wall19,
+		wall20,
+		wall21,
+		wall22,
+		wall23,
+		wall24,
+		wall25,
+		wall26,
+		wall27,
+		wall28,
+		wall29,
+		wall30,
+		wall31,
+		wall32,
+		wall33
+	);
 }
 
 function newGame() {
@@ -153,7 +333,7 @@ function update() {
 		// loop over every wall
 		for (let i = 0; i < walls.length; i++) {
 			let wall = walls[i];
-			if (wall.dir === 0) {
+			if (!wall.dir) {
 				walluppery = wall.y - WALL_WIDTH / 2;
 				walllowery = wall.y + WALL_WIDTH / 2;
 				wallrightx = wall.x + wall.dim / 2;
@@ -175,6 +355,7 @@ function update() {
 					pacman.xv = 0;
 					pacman.y -= pacman.yv / FPS;
 					pacman.yv = 0;
+					break;
 				}
 			}
 		}
@@ -238,7 +419,7 @@ function update() {
 	for (let i = 0; i < walls.length; i++) {
 		let wall = walls[i];
 		ctx.fillStyle = "blue";
-		if (wall.dir === 1) {
+		if (wall.dir) {
 			ctx.beginPath();
 			ctx.moveTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
 			ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y - wall.dim / 2);
