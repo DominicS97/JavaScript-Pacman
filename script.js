@@ -1,6 +1,7 @@
 // set constants
 const FPS = 60; // framerate
 const FUDGE = 0; // collision fudger px
+const KNOCK = 1; // collision knockback px
 const PAC_SIZE = 16; // pacman radius px
 const PAC_SPD = 150; // pacman speed modifier
 const GLOBAL_SPD = 1; // global speed modifier
@@ -91,13 +92,23 @@ function distBetweenPoints(x1, y1, x2, y2) {
 	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
-// total width of passage = 38px // 1 = vertical, 0 = horizontal
+// total width of passage = 38px // true = vertical, false = horizontal
 function createLevel() {
-	const wall1 = new Wall(canv.width / 2 - 80, canv.height / 2, 82, true);
-	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 33, 160, false);
-	const wall3 = new Wall(canv.width / 2 + 80, canv.height / 2, 82, true);
+	const wall1 = new Wall(
+		canv.width / 2 - 80,
+		canv.height / 2 - 0.5,
+		81,
+		true
+	);
+	const wall2 = new Wall(canv.width / 2, canv.height / 2 + 32, 160, false);
+	const wall3 = new Wall(
+		canv.width / 2 + 80,
+		canv.height / 2 - 0.5,
+		81,
+		true
+	);
 	const wall4 = new Wall(canv.width / 2, canv.height / 2 - 33, 160, false);
-	const wall5 = new Wall(canv.width / 2, canv.height / 2 + 87, 176, false);
+	const wall5 = new Wall(canv.width / 2, canv.height / 2 + 86, 176, false);
 	const wall6 = new Wall(
 		canv.width / 2 - 134,
 		canv.height / 2 + 58,
@@ -246,6 +257,130 @@ function createLevel() {
 	);
 	const wall32 = new Wall(canv.width / 2, canv.height / 2 + 195, 176, false);
 	const wall33 = new Wall(canv.width / 2, canv.height / 2 + 224, 64, true);
+	const wall34 = new Wall(
+		canv.width / 2 - 188,
+		canv.height / 2 - 55.5,
+		79,
+		true
+	);
+	const wall35 = new Wall(
+		canv.width / 2 - 246,
+		canv.height / 2 - 87,
+		100,
+		false
+	);
+	const wall36 = new Wall(
+		canv.width / 2 - 134,
+		canv.height / 2 - 82.5,
+		133,
+		true
+	);
+	const wall37 = new Wall(
+		canv.width / 2 - 94,
+		canv.height / 2 - 87,
+		96,
+		false
+	);
+	const wall38 = new Wall(
+		canv.width / 2 - 211,
+		canv.height / 2 - 141,
+		62,
+		false
+	);
+	const wall39 = new Wall(
+		canv.width / 2 - 211,
+		canv.height / 2 - 211,
+		62,
+		false
+	);
+	const wall40 = new Wall(
+		canv.width / 2 - 211,
+		canv.height / 2 - 195,
+		62,
+		false
+	);
+	const wall41 = new Wall(
+		canv.width / 2 - 288,
+		canv.height / 2 - 172,
+		186,
+		true
+	);
+	const wall42 = new Wall(
+		canv.width / 2 - 94,
+		canv.height / 2 - 211,
+		96,
+		false
+	);
+	const wall43 = new Wall(
+		canv.width / 2 - 94,
+		canv.height / 2 - 195,
+		96,
+		false
+	);
+	const wall44 = new Wall(
+		canv.width / 2 + 188,
+		canv.height / 2 - 55.5,
+		79,
+		true
+	);
+	const wall45 = new Wall(
+		canv.width / 2 + 246,
+		canv.height / 2 - 87,
+		100,
+		false
+	);
+	const wall46 = new Wall(
+		canv.width / 2 + 134,
+		canv.height / 2 - 82.5,
+		133,
+		true
+	);
+	const wall47 = new Wall(
+		canv.width / 2 + 94,
+		canv.height / 2 - 87,
+		96,
+		false
+	);
+	const wall48 = new Wall(
+		canv.width / 2 + 211,
+		canv.height / 2 - 141,
+		62,
+		false
+	);
+	const wall49 = new Wall(
+		canv.width / 2 + 211,
+		canv.height / 2 - 211,
+		62,
+		false
+	);
+	const wall50 = new Wall(
+		canv.width / 2 + 211,
+		canv.height / 2 - 195,
+		62,
+		false
+	);
+	const wall51 = new Wall(
+		canv.width / 2 + 288,
+		canv.height / 2 - 172,
+		186,
+		true
+	);
+	const wall52 = new Wall(
+		canv.width / 2 + 94,
+		canv.height / 2 - 211,
+		96,
+		false
+	);
+	const wall53 = new Wall(
+		canv.width / 2 + 94,
+		canv.height / 2 - 195,
+		96,
+		false
+	);
+	const wall54 = new Wall(canv.width / 2, canv.height / 2 - 141, 176, false);
+	const wall55 = new Wall(canv.width / 2, canv.height / 2 - 111.5, 65, true);
+	const wall56 = new Wall(canv.width / 2, canv.height / 2 - 226, 80, true);
+	const wall57 = new Wall(canv.width / 2, canv.height / 2 - 265, 592, false);
 	walls.push(
 		wall1,
 		wall2,
@@ -279,7 +414,31 @@ function createLevel() {
 		wall30,
 		wall31,
 		wall32,
-		wall33
+		wall33,
+		wall34,
+		wall35,
+		wall36,
+		wall37,
+		wall38,
+		wall39,
+		wall40,
+		wall41,
+		wall42,
+		wall43,
+		wall44,
+		wall45,
+		wall46,
+		wall47,
+		wall48,
+		wall49,
+		wall50,
+		wall51,
+		wall52,
+		wall53,
+		wall54,
+		wall55,
+		wall56,
+		wall57
 	);
 }
 
@@ -333,17 +492,25 @@ function update() {
 		// loop over every wall
 		for (let i = 0; i < walls.length; i++) {
 			let wall = walls[i];
-			if (!wall.dir) {
-				walluppery = wall.y - WALL_WIDTH / 2;
-				walllowery = wall.y + WALL_WIDTH / 2;
-				wallrightx = wall.x + wall.dim / 2;
-				wallleftx = wall.x - wall.dim / 2;
-			} else {
+			// generalise for both wall types
+			if (wall.dir) {
 				walluppery = wall.y - wall.dim / 2;
 				walllowery = wall.y + wall.dim / 2;
 				wallrightx = wall.x + WALL_WIDTH / 2;
 				wallleftx = wall.x - WALL_WIDTH / 2;
+			} else {
+				walluppery = wall.y - WALL_WIDTH / 2;
+				walllowery = wall.y + WALL_WIDTH / 2;
+				wallrightx = wall.x + wall.dim / 2;
+				wallleftx = wall.x - wall.dim / 2;
 			}
+			// quadrants for  knockback dir
+			let m1 = (walllowery - walluppery) / (wallrightx - wallleftx);
+			let c1 = walluppery - wallleftx * m1;
+			let x1 = (pacman.y - c1) / m1;
+			let m2 = (walluppery - walllowery) / (wallrightx - wallleftx);
+			let c2 = walllowery - wallleftx * m2;
+			let x2 = (pacman.y - c2) / m2;
 			// check if vertical face falls within range
 			if (walllowery + FUDGE >= uppery && walluppery - FUDGE <= lowery) {
 				// check if horizontal face falls within range
@@ -351,9 +518,18 @@ function update() {
 					wallleftx + FUDGE <= rightx &&
 					wallrightx + FUDGE >= leftx
 				) {
-					pacman.x -= pacman.xv / FPS;
+					// determine knockback dir
+					debugger;
+					if (pacman.x > x1 && pacman.x > x2) {
+						pacman.x += KNOCK;
+					} else if (pacman.x > x1 && pacman.x < x2) {
+						pacman.y -= KNOCK;
+					} else if (pacman.x < x1 && pacman.x > x2) {
+						pacman.y += KNOCK;
+					} else {
+						pacman.x -= KNOCK;
+					}
 					pacman.xv = 0;
-					pacman.y -= pacman.yv / FPS;
 					pacman.yv = 0;
 					break;
 				}
