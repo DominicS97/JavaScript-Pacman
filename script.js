@@ -33,7 +33,7 @@ class Wall {
 }
 
 var level,
-	ghosts,
+	ghosts = [],
 	pacman,
 	startx = canv.width / 2,
 	starty = canv.height / 2 + 60,
@@ -379,7 +379,7 @@ function createLevel() {
 	);
 	const wall54 = new Wall(canv.width / 2, canv.height / 2 - 141, 176, false);
 	const wall55 = new Wall(canv.width / 2, canv.height / 2 - 111.5, 65, true);
-	const wall56 = new Wall(canv.width / 2, canv.height / 2 - 226, 80, true);
+	const wall56 = new Wall(canv.width / 2, canv.height / 2 - 227, 80, true);
 	const wall57 = new Wall(canv.width / 2, canv.height / 2 - 265, 592, false);
 	walls.push(
 		wall1,
@@ -440,6 +440,22 @@ function createLevel() {
 		wall56,
 		wall57
 	);
+	const ghost1 = {
+		x: canv.width / 2,
+		y: canv.height / 2 - 60,
+		color: "red",
+	};
+	const ghost2 = {
+		x: canv.width / 2 - 38,
+		y: canv.height / 2 - 60,
+		color: "orange",
+	};
+	const ghost3 = {
+		x: canv.width / 2 + 38,
+		y: canv.height / 2 - 60,
+		color: "green",
+	};
+	ghosts.push(ghost1, ghost2, ghost3);
 }
 
 function newGame() {
@@ -519,7 +535,6 @@ function update() {
 					wallrightx + FUDGE >= leftx
 				) {
 					// determine knockback dir
-					debugger;
 					if (pacman.x > x1 && pacman.x > x2) {
 						pacman.x += KNOCK;
 					} else if (pacman.x > x1 && pacman.x < x2) {
@@ -590,6 +605,26 @@ function update() {
 		true
 	);
 	ctx.fill();
+
+	// draw ghosts
+	for (let i = 0; i < ghosts.length; i++) {
+		let x = ghosts[i].x;
+		let y = ghosts[i].y;
+		let color = ghosts[i].color;
+
+		ctx.fillStyle = color;
+		ctx.beginPath();
+		ctx.arc(x, y, PAC_SIZE, Math.PI, Math.PI * 2);
+		ctx.fill();
+		ctx.moveTo(x - PAC_SIZE, y);
+		ctx.lineTo(x - PAC_SIZE, y + PAC_SIZE);
+		ctx.lineTo(x - PAC_SIZE / 2, y);
+		ctx.lineTo(x, y + PAC_SIZE);
+		ctx.lineTo(x + PAC_SIZE / 2, y);
+		ctx.lineTo(x + PAC_SIZE, y + PAC_SIZE);
+		ctx.lineTo(x + PAC_SIZE, y);
+		ctx.fill();
+	}
 
 	// draw walls
 	for (let i = 0; i < walls.length; i++) {
