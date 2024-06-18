@@ -11,7 +11,6 @@ const GHOST_SIZE = 30; // ghost radius px
 const WALL_WIDTH = 16; // wall width px
 const GAME_LIVES = 3; // start no lives
 const SHOW_BOUNDING = false; // show collision
-const TEXT_FADE = 2.5; // text fade time / s
 const TEXT_SIZE = 40; // text font-size / px
 const POINTS_LEMON = 20; // points for collecting lemon
 const POINTS_CHERRY = 50; // points for collecting cherry
@@ -37,8 +36,10 @@ var level,
 	pacman,
 	startx = canv.width / 2,
 	starty = canv.height / 2 + 60,
+	lives,
 	walls = [],
 	text,
+	text2,
 	textAlpha,
 	lives,
 	score,
@@ -47,6 +48,16 @@ var level,
 	keyUp,
 	wakka = Math.PI / 4,
 	wakkaDir = 0;
+
+pacman = {
+	x: startx,
+	y: starty,
+	a: 0,
+	isInvuln: false,
+	isDead: false,
+	xv: 0,
+	yv: 0,
+};
 newGame();
 
 // event handler
@@ -56,32 +67,38 @@ document.addEventListener("keyup", keyUp);
 function keyDown(/** @type {KeyboardEvent} */ ev) {
 	switch (ev.keyCode) {
 		case 32: // space || reset
-			pacman.a = 0;
-			pacman.x = startx;
-			pacman.y = starty;
-			pacman.xv = 0;
-			pacman.yv = 0;
+			if (pacman.isDead) {
+				newGame();
+			}
 			break;
 		case 37: // left arrow
-			pacman.a = Math.PI;
-			pacman.xv = -PAC_SPD * GLOBAL_SPD;
-			pacman.yv = 0;
+			if (!pacman.isDead) {
+				pacman.a = Math.PI;
+				pacman.xv = -PAC_SPD * GLOBAL_SPD;
+				pacman.yv = 0;
+			}
 			break;
 		case 38: // up arrow
-			pacman.a = (3 * Math.PI) / 2;
-			pacman.yv = -PAC_SPD * GLOBAL_SPD;
-			pacman.xv = 0;
-			break;
+			if (!pacman.isDead) {
+				pacman.a = (3 * Math.PI) / 2;
+				pacman.yv = -PAC_SPD * GLOBAL_SPD;
+				pacman.xv = 0;
+				break;
+			}
 		case 39: // right arrow
-			pacman.a = 0;
-			pacman.xv = PAC_SPD * GLOBAL_SPD;
-			pacman.yv = 0;
-			break;
+			if (!pacman.isDead) {
+				pacman.a = 0;
+				pacman.xv = PAC_SPD * GLOBAL_SPD;
+				pacman.yv = 0;
+				break;
+			}
 		case 40: // down arrow
-			pacman.a = Math.PI / 2;
-			pacman.yv = PAC_SPD * GLOBAL_SPD;
-			pacman.xv = 0;
-			break;
+			if (!pacman.isDead) {
+				pacman.a = Math.PI / 2;
+				pacman.yv = PAC_SPD * GLOBAL_SPD;
+				pacman.xv = 0;
+				break;
+			}
 	}
 }
 
@@ -443,16 +460,22 @@ function createLevel() {
 	const ghost1 = {
 		x: canv.width / 2,
 		y: canv.height / 2 - 60,
+		xv: 0,
+		yv: 0,
 		color: "red",
 	};
 	const ghost2 = {
-		x: canv.width / 2 - 38,
-		y: canv.height / 2 - 60,
+		x: canv.width / 2 - 161,
+		y: canv.height / 2 - 238,
+		xv: 0,
+		yv: 0,
 		color: "orange",
 	};
 	const ghost3 = {
-		x: canv.width / 2 + 38,
-		y: canv.height / 2 - 60,
+		x: canv.width / 2 + 161,
+		y: canv.height / 2 - 238,
+		xv: 0,
+		yv: 0,
 		color: "green",
 	};
 	ghosts.push(ghost1, ghost2, ghost3);
@@ -461,6 +484,15 @@ function createLevel() {
 function newGame() {
 	score = 0;
 	lives = GAME_LIVES;
+	text = "";
+	text2 = "";
+	pacman.a = 0;
+	pacman.x = startx;
+	pacman.y = starty;
+	pacman.xv = 0;
+	pacman.yv = 0;
+	pacman.isDead = false;
+	pacman.isInvuln = false;
 	createLevel();
 
 	// get high score from local
@@ -472,14 +504,14 @@ function newGame() {
 	}
 }
 
-pacman = {
-	x: startx,
-	y: starty,
-	a: 0,
-	isInvuln: false,
-	xv: 0,
-	yv: 0,
-};
+function killPacman() {
+	lives--;
+	if (lives === 0) {
+		text = "GAME OVER";
+		text2 = "SPACE TO RESET";
+		pacman.isDead = true;
+	}
+}
 
 // draw game
 function update() {
@@ -571,40 +603,69 @@ function update() {
 	ctx.fillStyle = "black";
 	ctx.fillRect(0, 0, canv.width, canv.height);
 
+	// ghost collision
+	for (let i = 0; i < ghosts.length; i++) {
+		// set variables for convenience
+		const uppery = pacman.y - PAC_SIZE;
+		const lowery = pacman.y + PAC_SIZE;
+		const rightx = pacman.x + PAC_SIZE;
+		const leftx = pacman.x - PAC_SIZE;
+		let ghost = ghosts[i];
+		// check if vertical falls within range
+		if (
+			ghost.y + PAC_SIZE + FUDGE >= uppery &&
+			ghost.y - PAC_SIZE - FUDGE <= lowery
+		) {
+			// check if horizontal falls within range
+			if (
+				ghost.x - PAC_SIZE - FUDGE <= rightx &&
+				ghost.x + PAC_SIZE + FUDGE >= leftx
+			) {
+				pacman.x = startx;
+				pacman.y = starty;
+				pacman.xv = 0;
+				pacman.yv = 0;
+				killPacman();
+			}
+		}
+	}
+
 	// draw pacman
-	ctx.fillStyle = "yellow";
-	ctx.beginPath();
-	ctx.arc(
-		pacman.x,
-		pacman.y,
-		PAC_SIZE,
-		Math.PI / 2 + pacman.a,
-		(3 * Math.PI) / 2 + pacman.a
-	);
-	ctx.fill();
-	ctx.beginPath();
-	ctx.moveTo(pacman.x, pacman.y);
-	ctx.lineTo(pacman.x, pacman.y - Math.cos(pacman.a) * PAC_SIZE);
-	ctx.arc(
-		pacman.x,
-		pacman.y,
-		PAC_SIZE,
-		(3 * Math.PI) / 2 + pacman.a,
-		2 * Math.PI - wakka + pacman.a
-	);
-	ctx.fill();
-	ctx.beginPath();
-	ctx.moveTo(pacman.x, pacman.y);
-	ctx.lineTo(pacman.x, pacman.y + Math.cos(pacman.a) * PAC_SIZE);
-	ctx.arc(
-		pacman.x,
-		pacman.y,
-		PAC_SIZE,
-		Math.PI / 2 + pacman.a,
-		wakka + pacman.a,
-		true
-	);
-	ctx.fill();
+	if (!pacman.isDead) {
+		ctx.fillStyle = "yellow";
+		ctx.beginPath();
+		ctx.arc(
+			pacman.x,
+			pacman.y,
+			PAC_SIZE,
+			Math.PI / 2 + pacman.a,
+			(3 * Math.PI) / 2 + pacman.a
+		);
+		ctx.fill();
+		ctx.beginPath();
+		ctx.moveTo(pacman.x, pacman.y);
+		ctx.lineTo(pacman.x, pacman.y - Math.cos(pacman.a) * PAC_SIZE);
+		ctx.arc(
+			pacman.x,
+			pacman.y,
+			PAC_SIZE,
+			(3 * Math.PI) / 2 + pacman.a,
+			2 * Math.PI - wakka + pacman.a
+		);
+		ctx.fill();
+		ctx.beginPath();
+		ctx.moveTo(pacman.x, pacman.y);
+		ctx.lineTo(pacman.x, pacman.y + Math.cos(pacman.a) * PAC_SIZE);
+		ctx.arc(
+			pacman.x,
+			pacman.y,
+			PAC_SIZE,
+			Math.PI / 2 + pacman.a,
+			wakka + pacman.a,
+			true
+		);
+		ctx.fill();
+	}
 
 	// draw ghosts
 	for (let i = 0; i < ghosts.length; i++) {
@@ -618,9 +679,9 @@ function update() {
 		ctx.fill();
 		ctx.moveTo(x - PAC_SIZE, y);
 		ctx.lineTo(x - PAC_SIZE, y + PAC_SIZE);
-		ctx.lineTo(x - PAC_SIZE / 2, y);
+		ctx.lineTo(x - PAC_SIZE / 2, y + PAC_SIZE / 3);
 		ctx.lineTo(x, y + PAC_SIZE);
-		ctx.lineTo(x + PAC_SIZE / 2, y);
+		ctx.lineTo(x + PAC_SIZE / 2, y + PAC_SIZE / 3);
 		ctx.lineTo(x + PAC_SIZE, y + PAC_SIZE);
 		ctx.lineTo(x + PAC_SIZE, y);
 		ctx.fill();
@@ -650,13 +711,13 @@ function update() {
 	}
 
 	// draw game text
-	if (textAlpha >= 0) {
+	if (text) {
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
-		ctx.fillStyle = "rgba(255, 255, 255, " + textAlpha + ")";
+		ctx.fillStyle = "white";
 		ctx.font = "small-caps " + TEXT_SIZE + "px dejavu sans mono";
 		ctx.fillText(text, canv.width / 2, canv.height * 0.75);
-		textAlpha -= 1.0 / TEXT_FADE / FPS;
+		ctx.fillText(text2, canv.width / 2, canv.height * 0.75 + TEXT_SIZE);
 	}
 
 	// draw score
@@ -664,12 +725,19 @@ function update() {
 	ctx.textBaseline = "middle";
 	ctx.fillStyle = "white";
 	ctx.font = TEXT_SIZE + "px dejavu sans mono";
-	ctx.fillText(score, canv.width - PAC_SIZE / 2, PAC_SIZE);
+	ctx.fillText(score, canv.width - PAC_SIZE / 2, 1.5 * PAC_SIZE);
 
 	// draw high score
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 	ctx.fillStyle = "white";
 	ctx.font = TEXT_SIZE * 0.75 + "px dejavu sans mono";
-	ctx.fillText("BEST: " + scoreHigh, canv.width / 2, PAC_SIZE);
+	ctx.fillText("BEST: " + scoreHigh, canv.width / 2, 1.5 * PAC_SIZE);
+
+	// draw lives
+	ctx.textAlign = "left";
+	ctx.textBaseline = "middle";
+	ctx.fillStyle = "white";
+	ctx.font = TEXT_SIZE * 0.75 + "px dejavu sans mono";
+	ctx.fillText("LIVES: " + lives, PAC_SIZE, 1.5 * PAC_SIZE);
 }
