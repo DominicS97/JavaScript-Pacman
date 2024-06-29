@@ -2,7 +2,7 @@
 
 Pacman created in JavaScript.
 
-Challenges & Solutions:
+<b>Challenges & Solutions:</b>
 
 1. Creating a working collision system.
 
