@@ -38,6 +38,7 @@ var level,
 	starty = canv.height / 2 + 60,
 	lives,
 	walls = [],
+	nodes = [],
 	text,
 	text2,
 	textAlpha,
@@ -479,6 +480,28 @@ function createLevel() {
 		color: "green",
 	};
 	ghosts.push(ghost1, ghost2, ghost3);
+	nodes.push(
+		{
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 + 59,
+			connections: [1, 3],
+		},
+		{
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 + 59,
+			connections: [0, 2],
+		},
+		{
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 - 60,
+			connections: [1, 3],
+		},
+		{
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 - 60,
+			connections: [0, 2],
+		}
+	);
 }
 
 function newGame() {
@@ -685,6 +708,28 @@ function update() {
 		ctx.lineTo(x + PAC_SIZE, y + PAC_SIZE);
 		ctx.lineTo(x + PAC_SIZE, y);
 		ctx.fill();
+	}
+
+	// draw nodes
+	for (let i = 0; i < nodes.length; i++) {
+		let x = nodes[i].x;
+		let y = nodes[i].y;
+		let connections = nodes[i].connections;
+		ctx.fillStyle = "pink";
+		ctx.beginPath();
+		ctx.arc(x, y, PAC_SIZE / 4, 0, Math.PI * 2);
+		ctx.fill();
+		for (let j = 0; j < connections.length; j++) {
+			let index = connections[j];
+			if (index > i) {
+				let x2 = nodes[index].x;
+				let y2 = nodes[index].y;
+				ctx.strokeStyle = "pink";
+				ctx.moveTo(x, y);
+				ctx.lineTo(x2, y2);
+				ctx.stroke();
+			}
+		}
 	}
 
 	// draw walls
