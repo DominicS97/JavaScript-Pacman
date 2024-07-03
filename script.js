@@ -510,99 +510,202 @@ function createLevel() {
 		// 	connections: [34, 41],
 		// }
 		{
+			// 0
 			x: canv.width / 2 - 261,
 			y: canv.height / 2 - 238,
 			connections: [],
 		},
 		{
+			// 1
 			x: canv.width / 2 - 261,
 			y: canv.height / 2 + 275,
-			connections: [2],
+			connections: [2, 29],
 		},
 		{
+			// 2
 			x: canv.width / 2 - 27,
 			y: canv.height / 2 + 275,
-			connections: [1, 3],
+			connections: [1, 3, 26],
 		},
 		{
+			// 3
 			x: canv.width / 2 + 27,
 			y: canv.height / 2 + 275,
 			connections: [2, 4, 15],
 		},
 		{
+			// 4
 			x: canv.width / 2 + 261,
 			y: canv.height / 2 + 275,
 			connections: [3, 5],
 		},
 		{
+			// 5
 			x: canv.width / 2 + 261,
 			y: canv.height / 2 + 221,
 			connections: [4, 6],
 		},
 		{
+			// 6
 			x: canv.width / 2 + 215,
 			y: canv.height / 2 + 221,
 			connections: [5, 7, 12],
 		},
 		{
+			// 7
 			x: canv.width / 2 + 215,
 			y: canv.height / 2 + 167,
 			connections: [6, 8],
 		},
 		{
+			// 8
 			x: canv.width / 2 + 261,
 			y: canv.height / 2 + 167,
 			connections: [7, 9],
 		},
 		{
+			// 9
 			x: canv.width / 2 + 261,
 			y: canv.height / 2 + 113,
 			connections: [8, 10],
 		},
 		{
+			// 10
 			x: canv.width / 2 + 161,
 			y: canv.height / 2 + 113,
 			connections: [9, 11, 18],
 		},
 		{
+			// 11
 			x: canv.width / 2 + 161,
 			y: canv.height / 2 + 167,
 			connections: [10, 12, 13],
 		},
 		{
+			// 12
 			x: canv.width / 2 + 161,
 			y: canv.height / 2 + 221,
 			connections: [6, 11],
 		},
 		{
+			// 13
 			x: canv.width / 2 + 107,
 			y: canv.height / 2 + 167,
 			connections: [11, 14, 16],
 		},
 		{
+			// 14
 			x: canv.width / 2 + 107,
 			y: canv.height / 2 + 221,
 			connections: [13, 15],
 		},
 		{
+			// 15
 			x: canv.width / 2 + 27,
 			y: canv.height / 2 + 221,
 			connections: [3, 14],
 		},
 		{
+			// 16
 			x: canv.width / 2 + 27,
 			y: canv.height / 2 + 167,
-			connections: [13, 17],
+			connections: [13, 17, 19],
 		},
 		{
+			// 17
 			x: canv.width / 2 + 27,
 			y: canv.height / 2 + 113,
 			connections: [16, 18],
 		},
 		{
+			// 18
 			x: canv.width / 2 + 107,
 			y: canv.height / 2 + 113,
 			connections: [10, 17],
+		},
+		{
+			// 19
+			x: canv.width / 2 - 27,
+			y: canv.height / 2 + 167,
+			connections: [16, 20, 24],
+		},
+		{
+			// 20
+			x: canv.width / 2 - 27,
+			y: canv.height / 2 + 113,
+			connections: [19, 21],
+		},
+		{
+			// 21
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 + 113,
+			connections: [20, 22],
+		},
+		{
+			// 22
+			x: canv.width / 2 - 161,
+			y: canv.height / 2 + 113,
+			connections: [21, 23, 32],
+		},
+		{
+			// 23
+			x: canv.width / 2 - 161,
+			y: canv.height / 2 + 167,
+			connections: [22, 24, 27],
+		},
+		{
+			// 24
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 + 167,
+			connections: [19, 23, 25],
+		},
+		{
+			// 25
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 + 221,
+			connections: [24, 26],
+		},
+		{
+			// 26
+			x: canv.width / 2 - 27,
+			y: canv.height / 2 + 221,
+			connections: [2, 25],
+		},
+		{
+			// 27
+			x: canv.width / 2 - 161,
+			y: canv.height / 2 + 221,
+			connections: [23, 28],
+		},
+		{
+			// 28
+			x: canv.width / 2 - 215,
+			y: canv.height / 2 + 221,
+			connections: [27, 29, 30],
+		},
+		{
+			// 29
+			x: canv.width / 2 - 261,
+			y: canv.height / 2 + 221,
+			connections: [1, 28],
+		},
+		{
+			// 30
+			x: canv.width / 2 - 215,
+			y: canv.height / 2 + 167,
+			connections: [28, 31],
+		},
+		{
+			// 31
+			x: canv.width / 2 - 261,
+			y: canv.height / 2 + 167,
+			connections: [30, 32],
+		},
+		{
+			// 32
+			x: canv.width / 2 - 261,
+			y: canv.height / 2 + 113,
+			connections: [22, 31],
 		}
 	);
 	for (let i = 0; i < nodes.length; i++) {
@@ -618,9 +721,9 @@ function createLevel() {
 			if (index > i) {
 				let x2 = nodes[index].x;
 				let y2 = nodes[index].y;
+				let distBetween = distBetweenPoints(x, y, x2, y2);
 				let pellet_no = Math.floor(
-					distBetweenPoints(x, y, x2, y2) /
-						(2 * (PEL_DIST + PEL_SIZE))
+					distBetween / (2 * (PEL_DIST + PEL_SIZE))
 				);
 				let xf = 0;
 				let yf = 0;
@@ -636,9 +739,22 @@ function createLevel() {
 				}
 				for (let k = 1; k < pellet_no; k++) {
 					pellets.push({
-						x: x + xf * k * 2 * (PEL_SIZE + PEL_DIST),
-						y: y + yf * k * 2 * (PEL_SIZE + PEL_DIST),
+						x: x + xf * k * (distBetween / pellet_no),
+						y: y + yf * k * (distBetween / pellet_no),
 					});
+				}
+			}
+		}
+	}
+	for (let l = 0; l < pellets.length; l++) {
+		x = pellets[l].x;
+		y = pellets[l].y;
+		for (let m = 0; m < pellets.length; m++) {
+			if (m != l) {
+				x2 = pellets[m].x;
+				y2 = pellets[m].y;
+				if (x === x2 && y === y2) {
+					pellets[l] = {};
 				}
 			}
 		}
@@ -849,6 +965,19 @@ function update() {
 		ctx.lineTo(x + GHOST_SIZE, y + GHOST_SIZE);
 		ctx.lineTo(x + GHOST_SIZE, y);
 		ctx.fill();
+	}
+
+	// check pellet collision
+	for (let i = 0; i < pellets.length; i++) {
+		let x = pacman.x;
+		let y = pacman.y;
+		let x2 = pellets[i].x;
+		let y2 = pellets[i].y;
+		if (distBetweenPoints(x, y, x2, y2) < PAC_SIZE + PEL_SIZE) {
+			pellets[i] = {};
+			console.log(i);
+			score += POINTS_LEMON;
+		}
 	}
 
 	// draw pellets
