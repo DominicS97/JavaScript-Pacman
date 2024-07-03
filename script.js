@@ -7,7 +7,9 @@ const PAC_SPD = 150; // pacman speed modifier
 const GLOBAL_SPD = 1; // global speed modifier
 const WAKKA_SPD = 1.6; // wakka speed (lower = faster)
 const GHOST_NUM = 3; // starting number of ghosts
-const GHOST_SIZE = 30; // ghost radius px
+const GHOST_SIZE = PAC_SIZE; // ghost radius px
+const PEL_SIZE = PAC_SIZE / 6; // pellet radius px
+const PEL_DIST = PAC_SIZE / 4; // pellet distance between px
 const WALL_WIDTH = 16; // wall width px
 const GAME_LIVES = 3; // start no lives
 const SHOW_BOUNDING = false; // show collision
@@ -16,6 +18,7 @@ const POINTS_LEMON = 20; // points for collecting lemon
 const POINTS_CHERRY = 50; // points for collecting cherry
 const POINTS_GHOST = 100; // points for destroying ghost
 const SAVE_KEY_SCORE = "highscore"; // save key for local storage of high score
+const DEBUG = false; // displays nodes and paths
 
 /** @type {HTMLCanvasElement} */
 var canv = document.getElementById("gameCanvas");
@@ -39,6 +42,7 @@ var level,
 	lives,
 	walls = [],
 	nodes = [],
+	pellets = [],
 	text,
 	text2,
 	textAlpha,
@@ -481,27 +485,164 @@ function createLevel() {
 	};
 	ghosts.push(ghost1, ghost2, ghost3);
 	nodes.push(
+		// {
+		// 	// 35
+		// 	x: canv.width / 2 - 107,
+		// 	y: canv.height / 2 + 59,
+		// 	connections: [34, 36],
+		// },
+		// {
+		// 	// 36
+		// 	x: canv.width / 2 + 107,
+		// 	y: canv.height / 2 + 59,
+		// 	connections: [35, 37],
+		// },
+		// {
+		// 	// 39
+		// 	x: canv.width / 2 + 107,
+		// 	y: canv.height / 2 - 60,
+		// 	connections: [37, 40],
+		// },
+		// {
+		// 	// 42
+		// 	x: canv.width / 2 - 107,
+		// 	y: canv.height / 2 - 60,
+		// 	connections: [34, 41],
+		// }
 		{
-			x: canv.width / 2 - 107,
-			y: canv.height / 2 + 59,
+			x: canv.width / 2 - 261,
+			y: canv.height / 2 - 238,
+			connections: [],
+		},
+		{
+			x: canv.width / 2 - 261,
+			y: canv.height / 2 + 275,
+			connections: [2],
+		},
+		{
+			x: canv.width / 2 - 27,
+			y: canv.height / 2 + 275,
 			connections: [1, 3],
 		},
 		{
-			x: canv.width / 2 + 107,
-			y: canv.height / 2 + 59,
-			connections: [0, 2],
+			x: canv.width / 2 + 27,
+			y: canv.height / 2 + 275,
+			connections: [2, 4, 15],
+		},
+		{
+			x: canv.width / 2 + 261,
+			y: canv.height / 2 + 275,
+			connections: [3, 5],
+		},
+		{
+			x: canv.width / 2 + 261,
+			y: canv.height / 2 + 221,
+			connections: [4, 6],
+		},
+		{
+			x: canv.width / 2 + 215,
+			y: canv.height / 2 + 221,
+			connections: [5, 7, 12],
+		},
+		{
+			x: canv.width / 2 + 215,
+			y: canv.height / 2 + 167,
+			connections: [6, 8],
+		},
+		{
+			x: canv.width / 2 + 261,
+			y: canv.height / 2 + 167,
+			connections: [7, 9],
+		},
+		{
+			x: canv.width / 2 + 261,
+			y: canv.height / 2 + 113,
+			connections: [8, 10],
+		},
+		{
+			x: canv.width / 2 + 161,
+			y: canv.height / 2 + 113,
+			connections: [9, 11, 18],
+		},
+		{
+			x: canv.width / 2 + 161,
+			y: canv.height / 2 + 167,
+			connections: [10, 12, 13],
+		},
+		{
+			x: canv.width / 2 + 161,
+			y: canv.height / 2 + 221,
+			connections: [6, 11],
 		},
 		{
 			x: canv.width / 2 + 107,
-			y: canv.height / 2 - 60,
-			connections: [1, 3],
+			y: canv.height / 2 + 167,
+			connections: [11, 14, 16],
 		},
 		{
-			x: canv.width / 2 - 107,
-			y: canv.height / 2 - 60,
-			connections: [0, 2],
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 + 221,
+			connections: [13, 15],
+		},
+		{
+			x: canv.width / 2 + 27,
+			y: canv.height / 2 + 221,
+			connections: [3, 14],
+		},
+		{
+			x: canv.width / 2 + 27,
+			y: canv.height / 2 + 167,
+			connections: [13, 17],
+		},
+		{
+			x: canv.width / 2 + 27,
+			y: canv.height / 2 + 113,
+			connections: [16, 18],
+		},
+		{
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 + 113,
+			connections: [10, 17],
 		}
 	);
+	for (let i = 0; i < nodes.length; i++) {
+		let x = nodes[i].x;
+		let y = nodes[i].y;
+		let connections = nodes[i].connections;
+		for (let j = 0; j < connections.length; j++) {
+			pellets.push({
+				x: x,
+				y: y,
+			});
+			let index = connections[j];
+			if (index > i) {
+				let x2 = nodes[index].x;
+				let y2 = nodes[index].y;
+				let pellet_no = Math.floor(
+					distBetweenPoints(x, y, x2, y2) /
+						(2 * (PEL_DIST + PEL_SIZE))
+				);
+				let xf = 0;
+				let yf = 0;
+				if (x > x2) {
+					xf = -1;
+				} else if (x2 > x) {
+					xf = 1;
+				}
+				if (y > y2) {
+					yf = -1;
+				} else if (y2 > y) {
+					yf = 1;
+				}
+				for (let k = 1; k < pellet_no; k++) {
+					pellets.push({
+						x: x + xf * k * 2 * (PEL_SIZE + PEL_DIST),
+						y: y + yf * k * 2 * (PEL_SIZE + PEL_DIST),
+					});
+				}
+			}
+		}
+	}
 }
 
 function newGame() {
@@ -698,36 +839,48 @@ function update() {
 
 		ctx.fillStyle = color;
 		ctx.beginPath();
-		ctx.arc(x, y, PAC_SIZE, Math.PI, Math.PI * 2);
+		ctx.arc(x, y, GHOST_SIZE, Math.PI, Math.PI * 2);
 		ctx.fill();
-		ctx.moveTo(x - PAC_SIZE, y);
-		ctx.lineTo(x - PAC_SIZE, y + PAC_SIZE);
-		ctx.lineTo(x - PAC_SIZE / 2, y + PAC_SIZE / 3);
-		ctx.lineTo(x, y + PAC_SIZE);
-		ctx.lineTo(x + PAC_SIZE / 2, y + PAC_SIZE / 3);
-		ctx.lineTo(x + PAC_SIZE, y + PAC_SIZE);
-		ctx.lineTo(x + PAC_SIZE, y);
+		ctx.moveTo(x - GHOST_SIZE, y);
+		ctx.lineTo(x - GHOST_SIZE, y + GHOST_SIZE);
+		ctx.lineTo(x - GHOST_SIZE / 2, y + GHOST_SIZE / 3);
+		ctx.lineTo(x, y + GHOST_SIZE);
+		ctx.lineTo(x + GHOST_SIZE / 2, y + GHOST_SIZE / 3);
+		ctx.lineTo(x + GHOST_SIZE, y + GHOST_SIZE);
+		ctx.lineTo(x + GHOST_SIZE, y);
+		ctx.fill();
+	}
+
+	// draw pellets
+	for (let i = 0; i < pellets.length; i++) {
+		let x = pellets[i].x;
+		let y = pellets[i].y;
+		ctx.fillStyle = "pink";
+		ctx.beginPath();
+		ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
 		ctx.fill();
 	}
 
 	// draw nodes
-	for (let i = 0; i < nodes.length; i++) {
-		let x = nodes[i].x;
-		let y = nodes[i].y;
-		let connections = nodes[i].connections;
-		ctx.fillStyle = "pink";
-		ctx.beginPath();
-		ctx.arc(x, y, PAC_SIZE / 4, 0, Math.PI * 2);
-		ctx.fill();
-		for (let j = 0; j < connections.length; j++) {
-			let index = connections[j];
-			if (index > i) {
+	if (DEBUG) {
+		for (let i = 0; i < nodes.length; i++) {
+			let x = nodes[i].x;
+			let y = nodes[i].y;
+			let connections = nodes[i].connections;
+			ctx.fillStyle = "pink";
+			ctx.beginPath();
+			ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
+			ctx.fill();
+			for (let j = 0; j < connections.length; j++) {
+				let index = connections[j];
+				// if (index > i) {
 				let x2 = nodes[index].x;
 				let y2 = nodes[index].y;
 				ctx.strokeStyle = "pink";
 				ctx.moveTo(x, y);
 				ctx.lineTo(x2, y2);
 				ctx.stroke();
+				//}
 			}
 		}
 	}
