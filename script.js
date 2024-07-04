@@ -8,6 +8,7 @@ const GLOBAL_SPD = 1; // global speed modifier
 const WAKKA_SPD = 1.6; // wakka speed (lower = faster)
 const GHOST_NUM = 3; // starting number of ghosts
 const GHOST_SIZE = PAC_SIZE; // ghost radius px
+const GHOST_SPD = 100; // ghost speed
 const PEL_SIZE = PAC_SIZE / 6; // pellet radius px
 const PEL_DIST = PAC_SIZE / 4; // pellet distance between px
 const WALL_WIDTH = 16; // wall width px
@@ -464,21 +465,21 @@ function createLevel() {
 	);
 	const ghost1 = {
 		x: canv.width / 2,
-		y: canv.height / 2 - 60,
+		y: canv.height / 2 + 275,
 		xv: 0,
 		yv: 0,
 		color: "red",
 	};
 	const ghost2 = {
-		x: canv.width / 2 - 161,
-		y: canv.height / 2 - 238,
+		x: canv.width / 2 - 235,
+		y: canv.height / 2 + 275,
 		xv: 0,
 		yv: 0,
 		color: "orange",
 	};
 	const ghost3 = {
-		x: canv.width / 2 + 161,
-		y: canv.height / 2 - 238,
+		x: canv.width / 2 + 235,
+		y: canv.height / 2 + 275,
 		xv: 0,
 		yv: 0,
 		color: "green",
@@ -746,6 +747,7 @@ function createLevel() {
 			}
 		}
 	}
+	// pellets creation leaves duplicates for some reason
 	for (let l = 0; l < pellets.length; l++) {
 		x = pellets[l].x;
 		y = pellets[l].y;
@@ -947,26 +949,6 @@ function update() {
 		ctx.fill();
 	}
 
-	// draw ghosts
-	for (let i = 0; i < ghosts.length; i++) {
-		let x = ghosts[i].x;
-		let y = ghosts[i].y;
-		let color = ghosts[i].color;
-
-		ctx.fillStyle = color;
-		ctx.beginPath();
-		ctx.arc(x, y, GHOST_SIZE, Math.PI, Math.PI * 2);
-		ctx.fill();
-		ctx.moveTo(x - GHOST_SIZE, y);
-		ctx.lineTo(x - GHOST_SIZE, y + GHOST_SIZE);
-		ctx.lineTo(x - GHOST_SIZE / 2, y + GHOST_SIZE / 3);
-		ctx.lineTo(x, y + GHOST_SIZE);
-		ctx.lineTo(x + GHOST_SIZE / 2, y + GHOST_SIZE / 3);
-		ctx.lineTo(x + GHOST_SIZE, y + GHOST_SIZE);
-		ctx.lineTo(x + GHOST_SIZE, y);
-		ctx.fill();
-	}
-
 	// check pellet collision
 	for (let i = 0; i < pellets.length; i++) {
 		let x = pacman.x;
@@ -987,6 +969,68 @@ function update() {
 		ctx.fillStyle = "pink";
 		ctx.beginPath();
 		ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
+		ctx.fill();
+	}
+
+	// move ghosts
+	for (let i = 0; i < ghosts.length; i++) {
+		// find distances to each node
+		let distances = [];
+		let node_id;
+		let shortest = 1000;
+		let shortest_id;
+		for (let j = 0; j < nodes.length; j++) {
+			if (nodes[j].x === ghosts[i].x && nodes[j].y === ghosts[i].y) {
+				node_id = j;
+			} else {
+				let distance = distBetweenPoints(
+					nodes[j].x,
+					ghosts[i].x,
+					nodes[j].y,
+					ghosts[i].y
+				);
+				distances.push([j, distance]);
+				if (distance < shortest) {
+					shortest = distance;
+					shortest_id = j;
+				}
+			}
+		}
+		// move towards closest node
+		if (node_id) {
+			ghosts[i].xv = 0;
+			ghosts[i].yv = 0;
+		} else {
+			ghosts[i].xv =
+				((nodes[shortest_id].x - ghosts[i].x) /
+					((GHOST_SPD * GLOBAL_SPD) / FPS)) *
+				Math.abs(nodes[shortest_id].x - ghosts[i].x);
+			ghosts[i].yv =
+				((nodes[shortest_id].y - ghosts[i].y) /
+					((GHOST_SPD * GLOBAL_SPD) / FPS)) *
+				Math.abs(nodes[shortest_id].y - ghosts[i].y);
+		}
+		ghosts[i].x += ghosts[i].xv / FPS;
+		ghosts[i].y += ghosts[i].yv / FPS;
+	}
+
+	// draw ghosts
+	for (let i = 0; i < ghosts.length; i++) {
+		let x = ghosts[i].x;
+		let y = ghosts[i].y;
+		let color = ghosts[i].color;
+
+		ctx.fillStyle = color;
+		ctx.beginPath();
+		ctx.arc(x, y, GHOST_SIZE, Math.PI, Math.PI * 2);
+		ctx.fill();
+		ctx.moveTo(x - GHOST_SIZE, y);
+		ctx.lineTo(x - GHOST_SIZE, y + GHOST_SIZE);
+		ctx.lineTo(x - GHOST_SIZE / 2, y + GHOST_SIZE / 3);
+		ctx.lineTo(x, y + GHOST_SIZE);
+		ctx.lineTo(x + GHOST_SIZE / 2, y + GHOST_SIZE / 3);
+		ctx.lineTo(x + GHOST_SIZE, y + GHOST_SIZE);
+		ctx.lineTo(x + GHOST_SIZE, y);
 		ctx.fill();
 	}
 
