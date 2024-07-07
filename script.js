@@ -89,22 +89,22 @@ function keyDown(/** @type {KeyboardEvent} */ ev) {
 				pacman.a = (3 * Math.PI) / 2;
 				pacman.yv = -PAC_SPD * GLOBAL_SPD;
 				pacman.xv = 0;
-				break;
 			}
+			break;
 		case 39: // right arrow
 			if (!pacman.isDead) {
 				pacman.a = 0;
 				pacman.xv = PAC_SPD * GLOBAL_SPD;
 				pacman.yv = 0;
-				break;
 			}
+			break;
 		case 40: // down arrow
 			if (!pacman.isDead) {
 				pacman.a = Math.PI / 2;
 				pacman.yv = PAC_SPD * GLOBAL_SPD;
 				pacman.xv = 0;
-				break;
 			}
+			break;
 	}
 }
 
@@ -749,12 +749,12 @@ function createLevel() {
 	}
 	// pellets creation leaves duplicates for some reason
 	for (let l = 0; l < pellets.length; l++) {
-		x = pellets[l].x;
-		y = pellets[l].y;
+		let x = pellets[l].x;
+		let y = pellets[l].y;
 		for (let m = 0; m < pellets.length; m++) {
 			if (m != l) {
-				x2 = pellets[m].x;
-				y2 = pellets[m].y;
+				let x2 = pellets[m].x;
+				let y2 = pellets[m].y;
 				if (x === x2 && y === y2) {
 					pellets[l] = {};
 				}
@@ -971,19 +971,188 @@ function update() {
 		ctx.fill();
 	}
 
+	// find pacman closest node
+	let pacnode;
+	let pacnode_dist;
+	let pacnode_backup = 0;
+	let pacnode_backupdist = distBetweenPoints(
+		pacman.x,
+		pacman.y,
+		nodes[0].x,
+		nodes[0].y
+	);
+	let subnodes_xpac = nodes.slice();
+	let subnodes_ypac = nodes.slice();
+	for (let i = 0; i < nodes.length; i++) {
+		let node_dist = distBetweenPoints(
+			pacman.x,
+			pacman.y,
+			nodes[i].x,
+			nodes[i].y
+		);
+		if (node_dist < pacnode_backupdist) {
+			pacnode_backup = i;
+			pacnode_backupdist = node_dist;
+		}
+		// autocorrect to node when close
+		if (
+			Math.abs(nodes[i].x - pacman.x) < 2 &&
+			Math.abs(nodes[i].y - pacman.y) < 2
+		) {
+			pacnode = i;
+			pacnode_dist = 0;
+			// find nodes on the ghost axis
+		} else if (
+			Math.abs(nodes[i].x - pacman.x) >= 2 &&
+			Math.abs(nodes[i].y - pacman.y) >= 2
+		) {
+			subnodes_xpac[i] = [];
+			subnodes_ypac[i] = [];
+		} else if (
+			Math.abs(nodes[i].x - pacman.x) < 2 &&
+			Math.abs(nodes[i].y - pacman.y) >= 2
+		) {
+			subnodes_ypac[i] = [];
+		} else if (
+			Math.abs(nodes[i].x - pacman.x) >= 2 &&
+			Math.abs(nodes[i].y - pacman.y) < 2
+		) {
+			subnodes_xpac[i] = [];
+		}
+	}
+	// iterate over nodes with same x
+	for (let i = 0; i < subnodes_xpac.length; i++) {
+		let connections = subnodes_xpac[i].connections;
+		if (connections) {
+			for (let k = 0; k < connections.length; k++) {
+				let index = connections[k];
+				let connections2 = subnodes_xpac[index].connections;
+				if (connections2) {
+					for (let l = 0; l < connections2.length; l++) {
+						if (connections2[l] === i) {
+							if (
+								(pacman.y < subnodes_xpac[i].y &&
+									pacman.y > subnodes_xpac[index].y) ||
+								(pacman.y > subnodes_xpac[i].y &&
+									pacman.y < subnodes_xpac[index].y)
+							) {
+								let dist1 = distBetweenPoints(
+									pacman.x,
+									pacman.y,
+									subnodes_xpac[i].x,
+									subnodes_xpac[i].y
+								);
+								let dist2 = distBetweenPoints(
+									pacman.x,
+									pacman.y,
+									subnodes_xpac[index].x,
+									subnodes_xpac[index].y
+								);
+								if (
+									dist2 >= dist1 &&
+									(dist1 < pacnode_dist || !pacnode_dist)
+								) {
+									pacnode = i;
+									pacnode_dist = dist1;
+								} else if (
+									dist1 > dist2 &&
+									(dist2 < pacnode_dist || !pacnode_dist)
+								) {
+									pacnode = index;
+									pacnode_dist = dist2;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	// iterate over nodes with same y
+	for (let i = 0; i < subnodes_ypac.length; i++) {
+		let connections = subnodes_ypac[i].connections;
+		if (connections) {
+			for (let k = 0; k < connections.length; k++) {
+				let index = connections[k];
+				let connections2 = subnodes_ypac[index].connections;
+				if (connections2) {
+					for (let l = 0; l < connections2.length; l++) {
+						if (connections2[l] === i) {
+							if (
+								(pacman.x < subnodes_ypac[i].x &&
+									pacman.x > subnodes_ypac[index].x) ||
+								(pacman.x > subnodes_ypac[i].x &&
+									pacman.x < subnodes_ypac[index].x)
+							) {
+								let dist1 = distBetweenPoints(
+									pacman.x,
+									pacman.y,
+									subnodes_ypac[i].x,
+									subnodes_ypac[i].y
+								);
+								let dist2 = distBetweenPoints(
+									pacman.x,
+									pacman.y,
+									subnodes_ypac[index].x,
+									subnodes_ypac[index].y
+								);
+								if (
+									dist2 >= dist1 &&
+									(dist1 < pacnode_dist || !pacnode_dist)
+								) {
+									pacnode = i;
+									pacnode_dist = dist1;
+								} else if (
+									dist1 > dist2 &&
+									(dist2 < pacnode_dist || !pacnode_dist)
+								) {
+									pacnode = index;
+									pacnode_dist = dist2;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (!pacnode_dist) {
+		pacnode = pacnode_backup;
+		pacnode_dist = pacnode_backupdist;
+	}
+
 	// move ghosts
 	for (let i = 0; i < ghosts.length; i++) {
+		let node_id;
+		let ghostnode_dist;
+		let ghostnode_backup = 0;
+		let ghostnode_backupdist = distBetweenPoints(
+			ghosts[i].x,
+			ghosts[i].y,
+			nodes[0].x,
+			nodes[0].y
+		);
 		let subnodes_x = nodes.slice();
 		let subnodes_y = nodes.slice();
-		let node_id;
-		let shortest_id;
 		for (let j = 0; j < nodes.length; j++) {
+			let node_dist = distBetweenPoints(
+				ghosts[i].x,
+				ghosts[i].y,
+				nodes[j].x,
+				nodes[j].y
+			);
+			if (node_dist < ghostnode_backupdist) {
+				ghostnode_backup = j;
+				ghostnode_backupdist = node_dist;
+			}
+
 			// autocorrect to node when close
 			if (
 				Math.abs(nodes[j].x - ghosts[i].x) < 2 &&
 				Math.abs(nodes[j].y - ghosts[i].y) < 2
 			) {
 				node_id = j;
+				ghostnode_dist = 0;
 				ghosts[i].x = nodes[j].x;
 				ghosts[i].y = nodes[j].y;
 				// find nodes on the ghost axis
@@ -1021,7 +1190,33 @@ function update() {
 									(ghosts[i].y > subnodes_x[j].y &&
 										ghosts[i].y < subnodes_x[index].y)
 								) {
-									shortest_id = j;
+									let dist1 = distBetweenPoints(
+										ghosts[i].x,
+										ghosts[i].y,
+										subnodes_x[index].x,
+										subnodes_x[index].y
+									);
+									let dist2 = distBetweenPoints(
+										ghosts[i].x,
+										ghosts[i].y,
+										subnodes_x[index].x,
+										subnodes_x[index].y
+									);
+									if (
+										dist2 >= dist1 &&
+										(dist1 < ghostnode_dist ||
+											!ghostnode_dist)
+									) {
+										node_id = i;
+										ghostnode_dist = dist1;
+									} else if (
+										dist1 > dist2 &&
+										(dist2 < ghostnode_dist ||
+											!ghostnode_dist)
+									) {
+										node_id = index;
+										ghostnode_dist = dist2;
+									}
 								}
 							}
 						}
@@ -1045,7 +1240,33 @@ function update() {
 									(ghosts[i].x > subnodes_y[j].x &&
 										ghosts[i].x < subnodes_y[index].x)
 								) {
-									shortest_id = j;
+									let dist1 = distBetweenPoints(
+										ghosts[i].x,
+										ghosts[i].y,
+										subnodes_y[index].x,
+										subnodes_y[index].y
+									);
+									let dist2 = distBetweenPoints(
+										ghosts[i].x,
+										ghosts[i].y,
+										subnodes_y[index].x,
+										subnodes_y[index].y
+									);
+									if (
+										dist2 >= dist1 &&
+										(dist1 < ghostnode_dist ||
+											!ghostnode_dist)
+									) {
+										node_id = i;
+										ghostnode_dist = dist1;
+									} else if (
+										dist1 > dist2 &&
+										(dist2 < ghostnode_dist ||
+											!ghostnode_dist)
+									) {
+										node_id = index;
+										ghostnode_dist = dist2;
+									}
 								}
 							}
 						}
@@ -1053,24 +1274,77 @@ function update() {
 				}
 			}
 		}
+		if (!ghostnode_dist) {
+			node_id = ghostnode_backup;
+			ghostnode_dist = ghostnode_backupdist;
+		}
+		// shortest path
+		// node_id = closest node to ghost
+		// ghostnode_dist = distance from ghost to closest node
+		// pacnode = closest node to pacman
+		// pacnode_dist = distance from pacman to closest node
+		// let distance_array = nodes.slice();
+		// for (let j = 0; j < distance_array.length; i++) {
+		// 	distance_array[j] = { visited: false, dist: 100000 };
+		// }
+		// distance_array[node_id].visited = true;
+		// distance_array[node_id].dist = ghostnode_dist;
+		// let subarray = nodes[node_id].connections;
+		// for (let j = 0; j < subarray.length; j++) {
+		// 	let working_node = subarray[j];
+		// 	distance_array[working_node].dist =
+		// 		distance_array[node_id].dist +
+		// 		distBetweenPoints(
+		// 			nodes[node_id].x,
+		// 			nodes[node_id].y,
+		// 			nodes[working_node].x,
+		// 			nodes[working_node].y
+		// 		);
+		// }
+		// // takes in distance_array and updates it
+		// for (let j = 1; j < nodes.length; j++) {
+		// 	let shortest_id = 0;
+		// 	let shortest_dist = 100000;
+		// 	for (let k = 0; k < distance_array.length; k++) {
+		// 		if (!distance_array[k].visited) {
+		// 			if (distance_array[k].dist < shortest_dist) {
+		// 				shortest_id = k;
+		// 				shortest_dist = distance_array[k].dist;
+		// 			}
+		// 		}
+		// 	}
+		// 	let shortest_subarray = nodes[j].connections;
+		// 	for (let k = 0; k < shortest_subarray.length; k++) {
+		// 		let working_node = shortest_subarray[k];
+		// 		let working_dist =
+		// 			distance_array[shortest_id].dist +
+		// 			distBetweenPoints(
+		// 				nodes[shortest_id].x,
+		// 				nodes[shortest_id].y,
+		// 				nodes[working_node].x,
+		// 				nodes[working_node].y
+		// 			);
+		// 		if (working_dist < distance_array[working_node].dist)
+		// 			distance_array[working_node].dist = working_dist;
+		// 	}
+		// 	distance_array[shortest_id].visited = true;
+		// }
+
 		// move towards closest node
 		if (node_id) {
-			ghosts[i].xv = 0;
-			ghosts[i].yv = 0;
-		} else if (shortest_id) {
-			if (nodes[shortest_id].x - ghosts[i].x != 0) {
+			if (nodes[node_id].x - ghosts[i].x != 0) {
 				ghosts[i].xv =
 					(GHOST_SPD *
 						GLOBAL_SPD *
-						Math.abs(nodes[shortest_id].x - ghosts[i].x)) /
-					(nodes[shortest_id].x - ghosts[i].x);
+						Math.abs(nodes[node_id].x - ghosts[i].x)) /
+					(nodes[node_id].x - ghosts[i].x);
 			}
-			if (nodes[shortest_id].y - ghosts[i].y != 0) {
+			if (nodes[node_id].y - ghosts[i].y != 0) {
 				ghosts[i].yv =
 					(GHOST_SPD *
 						GLOBAL_SPD *
-						Math.abs(nodes[shortest_id].y - ghosts[i].y)) /
-					(nodes[shortest_id].y - ghosts[i].y);
+						Math.abs(nodes[node_id].y - ghosts[i].y)) /
+					(nodes[node_id].y - ghosts[i].y);
 			}
 		}
 		ghosts[i].x += ghosts[i].xv / FPS;
