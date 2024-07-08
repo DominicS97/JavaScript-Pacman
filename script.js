@@ -53,8 +53,8 @@ var level,
 	keyDown,
 	keyUp,
 	wakka = Math.PI / 4,
-	wakkaDir = 0;
-levelcreated = false;
+	wakkaDir = 0,
+	levelcreated = false;
 
 pacman = {
 	x: startx,
@@ -1386,8 +1386,6 @@ function update() {
 			node_id = node_final;
 		}
 
-		console.log(node_id, distance_array[node_final].path);
-
 		// move towards closest node
 		if (node_id) {
 			if (nodes[node_id].x - ghosts[i].x != 0) {
@@ -1405,8 +1403,34 @@ function update() {
 					(nodes[node_id].y - ghosts[i].y);
 			}
 		}
+
 		ghosts[i].x += ghosts[i].xv / FPS;
 		ghosts[i].y += ghosts[i].yv / FPS;
+
+		// detect ghost collisions
+		for (let j = 0; j < ghosts.length; j++) {
+			if (j === i) {
+			} else if (
+				distBetweenPoints(
+					ghosts[i].x,
+					ghosts[i].y,
+					ghosts[j].x,
+					ghosts[j].y
+				) <
+				2 * GHOST_SIZE
+			) {
+				console.log(
+					distBetweenPoints(
+						ghosts[i].x,
+						ghosts[i].y,
+						ghosts[j].x,
+						ghosts[j].y
+					)
+				);
+				ghosts[i].x -= (2 * ghosts[i].xv) / FPS;
+				ghosts[i].y -= (2 * ghosts[i].yv) / FPS;
+			}
+		}
 	}
 
 	// draw ghosts
