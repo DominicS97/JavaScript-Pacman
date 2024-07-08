@@ -1185,6 +1185,10 @@ function update() {
 			if (distBetweenPoints(x, y, x2, y2) < PAC_SIZE + PEL_SIZE) {
 				pellets[i] = {};
 				score += POINTS_LEMON;
+				if (score > scoreHigh) {
+					scoreHigh = score;
+					localStorage.setItem(SAVE_KEY_SCORE, scoreHigh);
+				}
 			}
 		}
 
