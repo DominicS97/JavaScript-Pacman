@@ -54,8 +54,7 @@ var level,
 	keyDown,
 	keyUp,
 	wakka = Math.PI / 4,
-	wakkaDir = 0,
-	levelcreated = false;
+	wakkaDir = 0;
 
 pacman = {
 	x: startx,
@@ -406,6 +405,7 @@ function createLevel() {
 	const wall55 = new Wall(canv.width / 2, canv.height / 2 - 111.5, 65, true);
 	const wall56 = new Wall(canv.width / 2, canv.height / 2 - 227, 80, true);
 	const wall57 = new Wall(canv.width / 2, canv.height / 2 - 265, 592, false);
+	walls = [];
 	walls.push(
 		wall1,
 		wall2,
@@ -486,37 +486,15 @@ function createLevel() {
 		yv: 0,
 		color: "green",
 	};
+	ghosts = [];
 	ghosts.push(ghost1, ghost2, ghost3);
+	nodes = [];
 	nodes.push(
-		// {
-		// 	// 35
-		// 	x: canv.width / 2 - 107,
-		// 	y: canv.height / 2 + 59,
-		// 	connections: [34, 36],
-		// },
-		// {
-		// 	// 36
-		// 	x: canv.width / 2 + 107,
-		// 	y: canv.height / 2 + 59,
-		// 	connections: [35, 37],
-		// },
-		// {
-		// 	// 39
-		// 	x: canv.width / 2 + 107,
-		// 	y: canv.height / 2 - 60,
-		// 	connections: [37, 40],
-		// },
-		// {
-		// 	// 42
-		// 	x: canv.width / 2 - 107,
-		// 	y: canv.height / 2 - 60,
-		// 	connections: [34, 41],
-		// }
 		{
 			// 0
 			x: canv.width / 2 - 261,
 			y: canv.height / 2 - 238,
-			connections: [],
+			connections: [58, 61],
 		},
 		{
 			// 1
@@ -576,7 +554,7 @@ function createLevel() {
 			// 10
 			x: canv.width / 2 + 161,
 			y: canv.height / 2 + 113,
-			connections: [9, 11, 18],
+			connections: [9, 11, 18, 38],
 		},
 		{
 			// 11
@@ -624,7 +602,7 @@ function createLevel() {
 			// 18
 			x: canv.width / 2 + 107,
 			y: canv.height / 2 + 113,
-			connections: [10, 17],
+			connections: [10, 17, 36],
 		},
 		{
 			// 19
@@ -642,13 +620,13 @@ function createLevel() {
 			// 21
 			x: canv.width / 2 - 107,
 			y: canv.height / 2 + 113,
-			connections: [20, 22],
+			connections: [20, 22, 35],
 		},
 		{
 			// 22
 			x: canv.width / 2 - 161,
 			y: canv.height / 2 + 113,
-			connections: [21, 23, 32],
+			connections: [21, 23, 32, 33],
 		},
 		{
 			// 23
@@ -709,8 +687,197 @@ function createLevel() {
 			x: canv.width / 2 - 261,
 			y: canv.height / 2 + 113,
 			connections: [22, 31],
+		},
+		{
+			// 33
+			x: canv.width / 2 - 161,
+			y: canv.height / 2 + 3,
+			connections: [22, 34, 63],
+		},
+		{
+			// 34
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 + 3,
+			connections: [33, 35, 42],
+		},
+		{
+			// 35
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 + 59,
+			connections: [34, 36],
+		},
+		{
+			// 36
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 + 59,
+			connections: [35, 37],
+		},
+		{
+			// 37
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 + 3,
+			connections: [36, 38, 39],
+		},
+		{
+			// 38
+			x: canv.width / 2 + 161,
+			y: canv.height / 2 + 3,
+			connections: [10, 37, 43],
+		},
+		{
+			// 39
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 - 60,
+			connections: [37, 40],
+		},
+		{
+			// 40
+			x: canv.width / 2 + 27,
+			y: canv.height / 2 - 60,
+			connections: [39, 41, 53],
+		},
+		{
+			// 41
+			x: canv.width / 2 - 27,
+			y: canv.height / 2 - 60,
+			connections: [40, 42, 54],
+		},
+		{
+			// 42
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 - 60,
+			connections: [34, 41],
+		},
+		//
+		{
+			// 43
+			x: canv.width / 2 + 161,
+			y: canv.height / 2 - 114,
+			connections: [38, 44, 48],
+		},
+		{
+			// 44
+			x: canv.width / 2 + 261,
+			y: canv.height / 2 - 114,
+			connections: [43, 45],
+		},
+		{
+			// 45
+			x: canv.width / 2 + 261,
+			y: canv.height / 2 - 168,
+			connections: [44, 46, 48],
+		},
+		{
+			// 46
+			x: canv.width / 2 + 261,
+			y: canv.height / 2 - 238,
+			connections: [45, 47],
+		},
+		{
+			// 47
+			x: canv.width / 2 + 161,
+			y: canv.height / 2 - 238,
+			connections: [46, 48, 49],
+		},
+		{
+			// 48
+			x: canv.width / 2 + 161,
+			y: canv.height / 2 - 168,
+			connections: [43, 45, 47, 51],
+		},
+		{
+			// 49
+			x: canv.width / 2 + 27,
+			y: canv.height / 2 - 238,
+			connections: [47, 50],
+		},
+		{
+			// 50
+			x: canv.width / 2 + 27,
+			y: canv.height / 2 - 168,
+			connections: [49, 51, 56],
+		},
+		{
+			// 51
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 - 168,
+			connections: [48, 50, 52],
+		},
+		{
+			// 52
+			x: canv.width / 2 + 107,
+			y: canv.height / 2 - 114,
+			connections: [51, 53],
+		},
+		{
+			// 53
+			x: canv.width / 2 + 27,
+			y: canv.height / 2 - 114,
+			connections: [40, 52],
+		},
+		//
+		{
+			// 54
+			x: canv.width / 2 - 27,
+			y: canv.height / 2 - 114,
+			connections: [41, 55],
+		},
+		{
+			// 55
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 - 114,
+			connections: [54, 59],
+		},
+		{
+			// 56
+			x: canv.width / 2 - 27,
+			y: canv.height / 2 - 168,
+			connections: [50, 57, 59],
+		},
+		{
+			// 57
+			x: canv.width / 2 - 27,
+			y: canv.height / 2 - 238,
+			connections: [56, 58],
+		},
+		{
+			// 58
+			x: canv.width / 2 - 161,
+			y: canv.height / 2 - 238,
+			connections: [0, 57, 60],
+		},
+		{
+			// 59
+			x: canv.width / 2 - 107,
+			y: canv.height / 2 - 168,
+			connections: [55, 56, 60],
+		},
+		{
+			// 60
+			x: canv.width / 2 - 161,
+			y: canv.height / 2 - 168,
+			connections: [58, 59, 61, 63],
+		},
+		{
+			// 61
+			x: canv.width / 2 - 261,
+			y: canv.height / 2 - 168,
+			connections: [0, 60, 62],
+		},
+		{
+			// 62
+			x: canv.width / 2 - 261,
+			y: canv.height / 2 - 114,
+			connections: [61, 63],
+		},
+		{
+			// 63
+			x: canv.width / 2 - 161,
+			y: canv.height / 2 - 114,
+			connections: [33, 60, 62],
 		}
 	);
+	pellets = [];
 	for (let i = 0; i < nodes.length; i++) {
 		let x = nodes[i].x;
 		let y = nodes[i].y;
@@ -763,7 +930,6 @@ function createLevel() {
 			}
 		}
 	}
-	levelcreated = true;
 }
 
 function newGame() {
@@ -778,9 +944,7 @@ function newGame() {
 	pacman.yv = 0;
 	pacman.isDead = false;
 	pacman.isInvuln = false;
-	if (!levelcreated) {
-		createLevel();
-	}
+	createLevel();
 
 	// get high score from local
 	var scoreStr = localStorage.getItem(SAVE_KEY_SCORE);
@@ -1046,8 +1210,8 @@ function update() {
 		}
 		// autocorrect to node when close
 		if (
-			Math.abs(nodes[i].x - pacman.x) < 2 &&
-			Math.abs(nodes[i].y - pacman.y) < 2
+			Math.abs(nodes[i].x - pacman.x) < 1 &&
+			Math.abs(nodes[i].y - pacman.y) < 1
 		) {
 			pacnode1 = i;
 			pacnode2 = i;
