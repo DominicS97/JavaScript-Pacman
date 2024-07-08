@@ -54,6 +54,7 @@ var level,
 	keyUp,
 	wakka = Math.PI / 4,
 	wakkaDir = 0;
+levelcreated = false;
 
 pacman = {
 	x: startx,
@@ -761,6 +762,7 @@ function createLevel() {
 			}
 		}
 	}
+	levelcreated = true;
 }
 
 function newGame() {
@@ -775,7 +777,9 @@ function newGame() {
 	pacman.yv = 0;
 	pacman.isDead = false;
 	pacman.isInvuln = false;
-	createLevel();
+	if (!levelcreated) {
+		createLevel();
+	}
 
 	// get high score from local
 	var scoreStr = localStorage.getItem(SAVE_KEY_SCORE);
@@ -972,8 +976,10 @@ function update() {
 	}
 
 	// find pacman closest node
-	let pacnode;
-	let pacnode_dist;
+	let pacnode1;
+	let pacnode_dist1;
+	let pacnode2;
+	let pacnode_dist2;
 	let pacnode_backup = 0;
 	let pacnode_backupdist = distBetweenPoints(
 		pacman.x,
@@ -999,8 +1005,10 @@ function update() {
 			Math.abs(nodes[i].x - pacman.x) < 2 &&
 			Math.abs(nodes[i].y - pacman.y) < 2
 		) {
-			pacnode = i;
-			pacnode_dist = 0;
+			pacnode1 = i;
+			pacnode2 = i;
+			pacnode_dist1 = 0;
+			pacnode_dist2 = 0;
 			// find nodes on the ghost axis
 		} else if (
 			Math.abs(nodes[i].x - pacman.x) >= 2 &&
@@ -1049,17 +1057,14 @@ function update() {
 									subnodes_xpac[index].y
 								);
 								if (
-									dist2 >= dist1 &&
-									(dist1 < pacnode_dist || !pacnode_dist)
+									dist1 < pacnode_dist1 ||
+									dist2 < pacnode_dist1 ||
+									!pacnode_dist1
 								) {
-									pacnode = i;
-									pacnode_dist = dist1;
-								} else if (
-									dist1 > dist2 &&
-									(dist2 < pacnode_dist || !pacnode_dist)
-								) {
-									pacnode = index;
-									pacnode_dist = dist2;
+									pacnode1 = i;
+									pacnode2 = index;
+									pacnode_dist1 = dist1;
+									pacnode_dist2 = dist2;
 								}
 							}
 						}
@@ -1097,17 +1102,14 @@ function update() {
 									subnodes_ypac[index].y
 								);
 								if (
-									dist2 >= dist1 &&
-									(dist1 < pacnode_dist || !pacnode_dist)
+									dist1 < pacnode_dist1 ||
+									dist2 < pacnode_dist1 ||
+									!pacnode_dist1
 								) {
-									pacnode = i;
-									pacnode_dist = dist1;
-								} else if (
-									dist1 > dist2 &&
-									(dist2 < pacnode_dist || !pacnode_dist)
-								) {
-									pacnode = index;
-									pacnode_dist = dist2;
+									pacnode1 = i;
+									pacnode2 = index;
+									pacnode_dist1 = dist1;
+									pacnode_dist2 = dist2;
 								}
 							}
 						}
@@ -1116,15 +1118,19 @@ function update() {
 			}
 		}
 	}
-	if (!pacnode_dist) {
-		pacnode = pacnode_backup;
-		pacnode_dist = pacnode_backupdist;
+	if (!pacnode_dist1) {
+		pacnode1 = pacnode_backup;
+		pacnode2 = pacnode_backup;
+		pacnode_dist1 = pacnode_backupdist;
+		pacnode_dist2 = pacnode_backupdist;
 	}
 
 	// move ghosts
 	for (let i = 0; i < ghosts.length; i++) {
-		let node_id;
-		let ghostnode_dist;
+		let ghostnode1;
+		let ghostnode2;
+		let ghostnode_dist1;
+		let ghostnode_dist2;
 		let ghostnode_backup = 0;
 		let ghostnode_backupdist = distBetweenPoints(
 			ghosts[i].x,
@@ -1151,10 +1157,10 @@ function update() {
 				Math.abs(nodes[j].x - ghosts[i].x) < 2 &&
 				Math.abs(nodes[j].y - ghosts[i].y) < 2
 			) {
-				node_id = j;
-				ghostnode_dist = 0;
-				ghosts[i].x = nodes[j].x;
-				ghosts[i].y = nodes[j].y;
+				ghostnode1 = j;
+				ghostnode2 = j;
+				ghostnode_dist1 = 0;
+				ghostnode_dist2 = 0;
 				// find nodes on the ghost axis
 			} else if (
 				Math.abs(nodes[j].x - ghosts[i].x) >= 2 &&
@@ -1203,19 +1209,14 @@ function update() {
 										subnodes_x[index].y
 									);
 									if (
-										dist2 >= dist1 &&
-										(dist1 < ghostnode_dist ||
-											!ghostnode_dist)
+										dist1 < ghostnode_dist1 ||
+										dist2 < ghostnode_dist1 ||
+										!ghostnode_dist1
 									) {
-										node_id = i;
-										ghostnode_dist = dist1;
-									} else if (
-										dist1 > dist2 &&
-										(dist2 < ghostnode_dist ||
-											!ghostnode_dist)
-									) {
-										node_id = index;
-										ghostnode_dist = dist2;
+										ghostnode1 = i;
+										ghostnode2 = index;
+										ghostnode_dist1 = dist1;
+										ghostnode_dist2 = dist2;
 									}
 								}
 							}
@@ -1253,19 +1254,14 @@ function update() {
 										subnodes_y[index].y
 									);
 									if (
-										dist2 >= dist1 &&
-										(dist1 < ghostnode_dist ||
-											!ghostnode_dist)
+										dist1 < ghostnode_dist1 ||
+										dist2 < ghostnode_dist1 ||
+										!ghostnode_dist1
 									) {
-										node_id = i;
-										ghostnode_dist = dist1;
-									} else if (
-										dist1 > dist2 &&
-										(dist2 < ghostnode_dist ||
-											!ghostnode_dist)
-									) {
-										node_id = index;
-										ghostnode_dist = dist2;
+										ghostnode1 = i;
+										ghostnode2 = index;
+										ghostnode_dist1 = dist1;
+										ghostnode_dist2 = dist2;
 									}
 								}
 							}
@@ -1274,61 +1270,123 @@ function update() {
 				}
 			}
 		}
-		if (!ghostnode_dist) {
-			node_id = ghostnode_backup;
-			ghostnode_dist = ghostnode_backupdist;
+		if (!ghostnode_dist1) {
+			ghostnode1 = ghostnode_backup;
+			ghostnode2 = ghostnode_backup;
+			ghostnode_dist1 = ghostnode_backupdist;
+			ghostnode_dist2 = ghostnode_backupdist;
 		}
+
 		// shortest path
-		// node_id = closest node to ghost
-		// ghostnode_dist = distance from ghost to closest node
-		// pacnode = closest node to pacman
-		// pacnode_dist = distance from pacman to closest node
-		// let distance_array = nodes.slice();
-		// for (let j = 0; j < distance_array.length; i++) {
-		// 	distance_array[j] = { visited: false, dist: 100000 };
-		// }
-		// distance_array[node_id].visited = true;
-		// distance_array[node_id].dist = ghostnode_dist;
-		// let subarray = nodes[node_id].connections;
-		// for (let j = 0; j < subarray.length; j++) {
-		// 	let working_node = subarray[j];
-		// 	distance_array[working_node].dist =
-		// 		distance_array[node_id].dist +
-		// 		distBetweenPoints(
-		// 			nodes[node_id].x,
-		// 			nodes[node_id].y,
-		// 			nodes[working_node].x,
-		// 			nodes[working_node].y
-		// 		);
-		// }
-		// // takes in distance_array and updates it
-		// for (let j = 1; j < nodes.length; j++) {
-		// 	let shortest_id = 0;
-		// 	let shortest_dist = 100000;
-		// 	for (let k = 0; k < distance_array.length; k++) {
-		// 		if (!distance_array[k].visited) {
-		// 			if (distance_array[k].dist < shortest_dist) {
-		// 				shortest_id = k;
-		// 				shortest_dist = distance_array[k].dist;
-		// 			}
-		// 		}
-		// 	}
-		// 	let shortest_subarray = nodes[j].connections;
-		// 	for (let k = 0; k < shortest_subarray.length; k++) {
-		// 		let working_node = shortest_subarray[k];
-		// 		let working_dist =
-		// 			distance_array[shortest_id].dist +
-		// 			distBetweenPoints(
-		// 				nodes[shortest_id].x,
-		// 				nodes[shortest_id].y,
-		// 				nodes[working_node].x,
-		// 				nodes[working_node].y
-		// 			);
-		// 		if (working_dist < distance_array[working_node].dist)
-		// 			distance_array[working_node].dist = working_dist;
-		// 	}
-		// 	distance_array[shortest_id].visited = true;
-		// }
+		// ghostnode1, ghostnode2 = closest nodes to ghost
+		// ghostnode_dist1, ghostnode_dist2 = distance from ghost to closest nodes
+		// pacnode1, pacnode2 = closest nodes to pacman
+		// pacnode_dist1, pacnode_dist2 = distance from pacman to closest nodes
+		let distance_array = nodes.slice();
+		for (let j = 0; j < distance_array.length; j++) {
+			distance_array[j] = { visited: false, dist: 100000, path: [] };
+		}
+		distance_array[ghostnode1].visited = true;
+		distance_array[ghostnode1].dist = ghostnode_dist1;
+		let subarray = nodes[ghostnode1].connections;
+		for (let j = 0; j < subarray.length; j++) {
+			let working_node = subarray[j];
+			distance_array[working_node].dist =
+				distance_array[ghostnode1].dist +
+				distBetweenPoints(
+					nodes[ghostnode1].x,
+					nodes[ghostnode1].y,
+					nodes[working_node].x,
+					nodes[working_node].y
+				);
+			distance_array[working_node].path = [ghostnode1];
+		}
+		distance_array[ghostnode2].visited = true;
+		distance_array[ghostnode2].dist = ghostnode_dist1;
+		subarray = nodes[ghostnode2].connections;
+		for (let j = 0; j < subarray.length; j++) {
+			let working_node = subarray[j];
+			let working_dist =
+				distance_array[ghostnode2].dist +
+				distBetweenPoints(
+					nodes[ghostnode2].x,
+					nodes[ghostnode2].y,
+					nodes[working_node].x,
+					nodes[working_node].y
+				);
+			if (working_dist < distance_array[working_node].dist) {
+				distance_array[working_node].dist = working_dist;
+				distance_array[working_node].path = [ghostnode2];
+			}
+		}
+		// takes in distance_array and updates it
+		for (let j = 1; j < distance_array.length; j++) {
+			let shortest_id = 0;
+			let shortest_dist = 100000;
+			for (let k = 0; k < distance_array.length; k++) {
+				if (!distance_array[k].visited) {
+					if (distance_array[k].dist < shortest_dist) {
+						shortest_id = k;
+						shortest_dist = distance_array[k].dist;
+					}
+				}
+			}
+			let shortest_subarray = nodes[shortest_id].connections;
+			for (let k = 0; k < shortest_subarray.length; k++) {
+				let working_node = shortest_subarray[k];
+				let working_dist =
+					distance_array[shortest_id].dist +
+					distBetweenPoints(
+						nodes[shortest_id].x,
+						nodes[shortest_id].y,
+						nodes[working_node].x,
+						nodes[working_node].y
+					);
+				if (working_dist < distance_array[working_node].dist) {
+					distance_array[working_node].dist = working_dist;
+					distance_array[working_node].path =
+						distance_array[shortest_id].path.slice();
+					distance_array[working_node].path.push(shortest_id);
+				}
+			}
+			distance_array[shortest_id].visited = true;
+		}
+
+		let final_dist1 = distance_array[pacnode1].dist + pacnode_dist1;
+		let final_dist2 = distance_array[pacnode2].dist + pacnode_dist2;
+		if (final_dist1 < final_dist2) {
+			node_final = pacnode1;
+		} else {
+			node_final = pacnode2;
+		}
+
+		let node_first = distance_array[node_final].path[0];
+		let node_second = distance_array[node_final].path[1];
+		let node_id = node_first;
+
+		if (node_second) {
+			if (
+				distBetweenPoints(
+					ghosts[i].x,
+					ghosts[i].y,
+					nodes[node_second].x,
+					nodes[node_second].y
+				) -
+					0.01 <
+				distBetweenPoints(
+					nodes[node_first].x,
+					nodes[node_first].y,
+					nodes[node_second].x,
+					nodes[node_second].y
+				)
+			) {
+				node_id = node_second;
+			}
+		} else {
+			node_id = node_final;
+		}
+
+		console.log(node_id, distance_array[node_final].path);
 
 		// move towards closest node
 		if (node_id) {
