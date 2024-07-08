@@ -20,7 +20,6 @@ const POINTS_LEMON = 20; // points for collecting lemon
 const POINTS_CHERRY = 50; // points for collecting cherry
 const POINTS_GHOST = 100; // points for destroying ghost
 const SAVE_KEY_SCORE = "highscore"; // save key for local storage of high score
-const DEBUG = false; // displays nodes and paths
 
 /** @type {HTMLCanvasElement} */
 var canv = document.getElementById("gameCanvas");
@@ -54,7 +53,9 @@ var level,
 	keyDown,
 	keyUp,
 	wakka = Math.PI / 4,
-	wakkaDir = 0;
+	wakkaDir = 0,
+	DEBUG = false, // displays debug info
+	STARTED = false;
 
 pacman = {
 	x: startx,
@@ -65,7 +66,6 @@ pacman = {
 	xv: 0,
 	yv: 0,
 };
-newGame();
 
 // event handler
 document.addEventListener("keydown", keyDown);
@@ -932,6 +932,7 @@ function createLevel() {
 	}
 }
 
+const START_BUTTON = document.getElementById("start");
 function newGame() {
 	score = 0;
 	lives = GAME_LIVES;
@@ -944,6 +945,8 @@ function newGame() {
 	pacman.yv = 0;
 	pacman.isDead = false;
 	pacman.isInvuln = false;
+	START_BUTTON.onclick = "";
+	STARTED = true;
 	createLevel();
 
 	// get high score from local
@@ -952,6 +955,14 @@ function newGame() {
 		scoreHigh = 0;
 	} else {
 		scoreHigh = parseInt(scoreStr);
+	}
+}
+
+function toggleDebug() {
+	if (DEBUG) {
+		DEBUG = false;
+	} else {
+		DEBUG = true;
 	}
 }
 
@@ -966,467 +977,475 @@ function killPacman() {
 
 // draw game
 function update() {
-	// cycle wakka
-	if (wakkaDir === 0 && wakka > 0) {
-		wakka = wakka - Math.PI / (WAKKA_SPD * FPS);
-	} else if (wakka <= 0) {
-		wakka = wakka + Math.PI / (WAKKA_SPD * FPS);
-		wakkaDir = 1;
-	} else if (wakkaDir === 1 && wakka < Math.PI / 4) {
-		wakka = wakka + Math.PI / (WAKKA_SPD * FPS);
-	} else {
-		wakka = wakka - Math.PI / (WAKKA_SPD * FPS);
-		wakkaDir = 0;
-	}
+	if (STARTED) {
+		// cycle wakka
+		if (wakkaDir === 0 && wakka > 0) {
+			wakka = wakka - Math.PI / (WAKKA_SPD * FPS);
+		} else if (wakka <= 0) {
+			wakka = wakka + Math.PI / (WAKKA_SPD * FPS);
+			wakkaDir = 1;
+		} else if (wakkaDir === 1 && wakka < Math.PI / 4) {
+			wakka = wakka + Math.PI / (WAKKA_SPD * FPS);
+		} else {
+			wakka = wakka - Math.PI / (WAKKA_SPD * FPS);
+			wakkaDir = 0;
+		}
 
-	// move pacman
-	// collision
-	function pacMover() {
-		// set variables for convenience
-		const uppery = pacman.y - PAC_SIZE;
-		const lowery = pacman.y + PAC_SIZE;
-		const rightx = pacman.x + PAC_SIZE;
-		const leftx = pacman.x - PAC_SIZE;
-		var walluppery, walllowery, wallrightx, wallleftx;
-		var allow = false;
-		// loop over every wall
-		for (let i = 0; i < walls.length; i++) {
-			let wall = walls[i];
-			// generalise for both wall types
-			if (wall.dir) {
-				walluppery = wall.y - wall.dim / 2;
-				walllowery = wall.y + wall.dim / 2;
-				wallrightx = wall.x + WALL_WIDTH / 2;
-				wallleftx = wall.x - WALL_WIDTH / 2;
-			} else {
-				walluppery = wall.y - WALL_WIDTH / 2;
-				walllowery = wall.y + WALL_WIDTH / 2;
-				wallrightx = wall.x + wall.dim / 2;
-				wallleftx = wall.x - wall.dim / 2;
-			}
-			// quadrants for  knockback dir
-			let m1 = (walllowery - walluppery) / (wallrightx - wallleftx);
-			let c1 = walluppery - wallleftx * m1;
-			let x1 = (pacman.y - c1) / m1;
-			let m2 = (walluppery - walllowery) / (wallrightx - wallleftx);
-			let c2 = walllowery - wallleftx * m2;
-			let x2 = (pacman.y - c2) / m2;
-			// check if vertical face falls within range
-			if (walllowery + FUDGE >= uppery && walluppery - FUDGE <= lowery) {
-				// check if horizontal face falls within range
+		// move pacman
+		// collision
+		function pacMover() {
+			// set variables for convenience
+			const uppery = pacman.y - PAC_SIZE;
+			const lowery = pacman.y + PAC_SIZE;
+			const rightx = pacman.x + PAC_SIZE;
+			const leftx = pacman.x - PAC_SIZE;
+			var walluppery, walllowery, wallrightx, wallleftx;
+			var allow = false;
+			// loop over every wall
+			for (let i = 0; i < walls.length; i++) {
+				let wall = walls[i];
+				// generalise for both wall types
+				if (wall.dir) {
+					walluppery = wall.y - wall.dim / 2;
+					walllowery = wall.y + wall.dim / 2;
+					wallrightx = wall.x + WALL_WIDTH / 2;
+					wallleftx = wall.x - WALL_WIDTH / 2;
+				} else {
+					walluppery = wall.y - WALL_WIDTH / 2;
+					walllowery = wall.y + WALL_WIDTH / 2;
+					wallrightx = wall.x + wall.dim / 2;
+					wallleftx = wall.x - wall.dim / 2;
+				}
+				// quadrants for  knockback dir
+				let m1 = (walllowery - walluppery) / (wallrightx - wallleftx);
+				let c1 = walluppery - wallleftx * m1;
+				let x1 = (pacman.y - c1) / m1;
+				let m2 = (walluppery - walllowery) / (wallrightx - wallleftx);
+				let c2 = walllowery - wallleftx * m2;
+				let x2 = (pacman.y - c2) / m2;
+				// check if vertical face falls within range
 				if (
-					wallleftx + FUDGE <= rightx &&
-					wallrightx + FUDGE >= leftx
+					walllowery + FUDGE >= uppery &&
+					walluppery - FUDGE <= lowery
 				) {
-					// allow close collisions for movement feel
+					// check if horizontal face falls within range
 					if (
-						(pacman.x > x1 && pacman.x < x2) ||
-						(pacman.x < x1 && pacman.x > x2)
+						wallleftx + FUDGE <= rightx &&
+						wallrightx + FUDGE >= leftx
 					) {
+						// allow close collisions for movement feel
 						if (
-							wallrightx - leftx <= ALLOW &&
-							wallrightx - leftx > 0
+							(pacman.x > x1 && pacman.x < x2) ||
+							(pacman.x < x1 && pacman.x > x2)
 						) {
-							pacman.x += wallrightx - leftx + 1;
-							allow = true;
+							if (
+								wallrightx - leftx <= ALLOW &&
+								wallrightx - leftx > 0
+							) {
+								pacman.x += wallrightx - leftx + 1;
+								allow = true;
+							} else if (
+								rightx - wallleftx <= ALLOW &&
+								rightx - wallleftx > 0
+							) {
+								pacman.x -= rightx - wallleftx + 1;
+								allow = true;
+							}
 						} else if (
-							rightx - wallleftx <= ALLOW &&
-							rightx - wallleftx > 0
+							(pacman.x > x1 && pacman.x > x2) ||
+							(pacman.x <= x1 && pacman.x <= x2)
 						) {
-							pacman.x -= rightx - wallleftx + 1;
-							allow = true;
+							if (
+								walllowery - uppery <= ALLOW &&
+								walllowery - uppery > 0
+							) {
+								pacman.y += walllowery - uppery + 1;
+								allow = true;
+							} else if (
+								lowery - walluppery <= ALLOW &&
+								lowery - walluppery > 0
+							) {
+								pacman.y -= lowery - walluppery + 1;
+								allow = true;
+							}
 						}
-					} else if (
-						(pacman.x > x1 && pacman.x > x2) ||
-						(pacman.x <= x1 && pacman.x <= x2)
-					) {
-						if (
-							walllowery - uppery <= ALLOW &&
-							walllowery - uppery > 0
-						) {
-							pacman.y += walllowery - uppery + 1;
-							allow = true;
-						} else if (
-							lowery - walluppery <= ALLOW &&
-							lowery - walluppery > 0
-						) {
-							pacman.y -= lowery - walluppery + 1;
-							allow = true;
+						if (allow === false) {
+							// determine knockback dir
+							if (pacman.x > x1 && pacman.x > x2) {
+								pacman.x += KNOCK;
+							} else if (pacman.x > x1 && pacman.x < x2) {
+								pacman.y -= KNOCK;
+							} else if (pacman.x < x1 && pacman.x > x2) {
+								pacman.y += KNOCK;
+							} else {
+								pacman.x -= KNOCK;
+							}
+							pacman.xv = 0;
+							pacman.yv = 0;
+							break;
 						}
-					}
-					if (allow === false) {
-						// determine knockback dir
-						if (pacman.x > x1 && pacman.x > x2) {
-							pacman.x += KNOCK;
-						} else if (pacman.x > x1 && pacman.x < x2) {
-							pacman.y -= KNOCK;
-						} else if (pacman.x < x1 && pacman.x > x2) {
-							pacman.y += KNOCK;
-						} else {
-							pacman.x -= KNOCK;
-						}
-						pacman.xv = 0;
-						pacman.yv = 0;
-						break;
 					}
 				}
 			}
-		}
-		pacman.x += pacman.xv / FPS;
-		pacman.y += pacman.yv / FPS;
-		if (allow) {
 			pacman.x += pacman.xv / FPS;
 			pacman.y += pacman.yv / FPS;
-		}
-	}
-	pacMover();
-
-	// handle edge of screen
-	if (pacman.x <= 0) {
-		pacman.x = canv.width;
-	} else if (pacman.x >= canv.width) {
-		pacman.x = 0;
-	}
-	if (pacman.y <= 0) {
-		pacman.y = canv.height;
-	} else if (pacman.y >= canv.height) {
-		pacman.y = 0;
-	}
-
-	// draw background
-	ctx.fillStyle = "black";
-	ctx.fillRect(0, 0, canv.width, canv.height);
-
-	// ghost collision
-	for (let i = 0; i < ghosts.length; i++) {
-		// set variables for convenience
-		const uppery = pacman.y - PAC_SIZE;
-		const lowery = pacman.y + PAC_SIZE;
-		const rightx = pacman.x + PAC_SIZE;
-		const leftx = pacman.x - PAC_SIZE;
-		let ghost = ghosts[i];
-		// check if vertical falls within range
-		if (
-			ghost.y + PAC_SIZE + FUDGE >= uppery &&
-			ghost.y - PAC_SIZE - FUDGE <= lowery
-		) {
-			// check if horizontal falls within range
-			if (
-				ghost.x - PAC_SIZE - FUDGE <= rightx &&
-				ghost.x + PAC_SIZE + FUDGE >= leftx
-			) {
-				pacman.x = startx;
-				pacman.y = starty;
-				pacman.xv = 0;
-				pacman.yv = 0;
-				killPacman();
+			if (allow) {
+				pacman.x += pacman.xv / FPS;
+				pacman.y += pacman.yv / FPS;
 			}
 		}
-	}
+		pacMover();
 
-	// draw pacman
-	if (!pacman.isDead) {
-		ctx.fillStyle = "yellow";
-		ctx.beginPath();
-		ctx.arc(
-			pacman.x,
-			pacman.y,
-			PAC_SIZE,
-			Math.PI / 2 + pacman.a,
-			(3 * Math.PI) / 2 + pacman.a
-		);
-		ctx.fill();
-		ctx.beginPath();
-		ctx.moveTo(pacman.x, pacman.y);
-		ctx.lineTo(pacman.x, pacman.y - Math.cos(pacman.a) * PAC_SIZE);
-		ctx.arc(
-			pacman.x,
-			pacman.y,
-			PAC_SIZE,
-			(3 * Math.PI) / 2 + pacman.a,
-			2 * Math.PI - wakka + pacman.a
-		);
-		ctx.fill();
-		ctx.beginPath();
-		ctx.moveTo(pacman.x, pacman.y);
-		ctx.lineTo(pacman.x, pacman.y + Math.cos(pacman.a) * PAC_SIZE);
-		ctx.arc(
-			pacman.x,
-			pacman.y,
-			PAC_SIZE,
-			Math.PI / 2 + pacman.a,
-			wakka + pacman.a,
-			true
-		);
-		ctx.fill();
-	}
+		// handle edge of screen
+		if (pacman.x <= 0) {
+			pacman.x = canv.width;
+		} else if (pacman.x >= canv.width) {
+			pacman.x = 0;
+		}
+		if (pacman.y <= 0) {
+			pacman.y = canv.height;
+		} else if (pacman.y >= canv.height) {
+			pacman.y = 0;
+		}
 
-	// check pellet collision
-	for (let i = 0; i < pellets.length; i++) {
-		let x = pacman.x;
-		let y = pacman.y;
-		let x2 = pellets[i].x;
-		let y2 = pellets[i].y;
-		if (distBetweenPoints(x, y, x2, y2) < PAC_SIZE + PEL_SIZE) {
-			pellets[i] = {};
-			score += POINTS_LEMON;
-		}
-	}
+		// draw background
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, 0, canv.width, canv.height);
 
-	// draw pellets
-	for (let i = 0; i < pellets.length; i++) {
-		let x = pellets[i].x;
-		let y = pellets[i].y;
-		ctx.fillStyle = "pink";
-		ctx.beginPath();
-		ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
-		ctx.fill();
-	}
-
-	// find pacman closest node
-	let pacnode1;
-	let pacnode_dist1;
-	let pacnode2;
-	let pacnode_dist2;
-	let pacnode_backup = 0;
-	let pacnode_backupdist = distBetweenPoints(
-		pacman.x,
-		pacman.y,
-		nodes[0].x,
-		nodes[0].y
-	);
-	let subnodes_xpac = nodes.slice();
-	let subnodes_ypac = nodes.slice();
-	for (let i = 0; i < nodes.length; i++) {
-		let node_dist = distBetweenPoints(
-			pacman.x,
-			pacman.y,
-			nodes[i].x,
-			nodes[i].y
-		);
-		if (node_dist < pacnode_backupdist) {
-			pacnode_backup = i;
-			pacnode_backupdist = node_dist;
-		}
-		// autocorrect to node when close
-		if (
-			Math.abs(nodes[i].x - pacman.x) < 1 &&
-			Math.abs(nodes[i].y - pacman.y) < 1
-		) {
-			pacnode1 = i;
-			pacnode2 = i;
-			pacnode_dist1 = 0;
-			pacnode_dist2 = 0;
-			// find nodes on the ghost axis
-		} else if (
-			Math.abs(nodes[i].x - pacman.x) >= 2 &&
-			Math.abs(nodes[i].y - pacman.y) >= 2
-		) {
-			subnodes_xpac[i] = [];
-			subnodes_ypac[i] = [];
-		} else if (
-			Math.abs(nodes[i].x - pacman.x) < 2 &&
-			Math.abs(nodes[i].y - pacman.y) >= 2
-		) {
-			subnodes_ypac[i] = [];
-		} else if (
-			Math.abs(nodes[i].x - pacman.x) >= 2 &&
-			Math.abs(nodes[i].y - pacman.y) < 2
-		) {
-			subnodes_xpac[i] = [];
-		}
-	}
-	// iterate over nodes with same x
-	for (let i = 0; i < subnodes_xpac.length; i++) {
-		let connections = subnodes_xpac[i].connections;
-		if (connections) {
-			for (let k = 0; k < connections.length; k++) {
-				let index = connections[k];
-				let connections2 = subnodes_xpac[index].connections;
-				if (connections2) {
-					for (let l = 0; l < connections2.length; l++) {
-						if (connections2[l] === i) {
-							if (
-								(pacman.y < subnodes_xpac[i].y &&
-									pacman.y > subnodes_xpac[index].y) ||
-								(pacman.y > subnodes_xpac[i].y &&
-									pacman.y < subnodes_xpac[index].y)
-							) {
-								let dist1 = distBetweenPoints(
-									pacman.x,
-									pacman.y,
-									subnodes_xpac[i].x,
-									subnodes_xpac[i].y
-								);
-								let dist2 = distBetweenPoints(
-									pacman.x,
-									pacman.y,
-									subnodes_xpac[index].x,
-									subnodes_xpac[index].y
-								);
-								if (
-									dist1 < pacnode_dist1 ||
-									dist2 < pacnode_dist1 ||
-									!pacnode_dist1
-								) {
-									pacnode1 = i;
-									pacnode2 = index;
-									pacnode_dist1 = dist1;
-									pacnode_dist2 = dist2;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	// iterate over nodes with same y
-	for (let i = 0; i < subnodes_ypac.length; i++) {
-		let connections = subnodes_ypac[i].connections;
-		if (connections) {
-			for (let k = 0; k < connections.length; k++) {
-				let index = connections[k];
-				let connections2 = subnodes_ypac[index].connections;
-				if (connections2) {
-					for (let l = 0; l < connections2.length; l++) {
-						if (connections2[l] === i) {
-							if (
-								(pacman.x < subnodes_ypac[i].x &&
-									pacman.x > subnodes_ypac[index].x) ||
-								(pacman.x > subnodes_ypac[i].x &&
-									pacman.x < subnodes_ypac[index].x)
-							) {
-								let dist1 = distBetweenPoints(
-									pacman.x,
-									pacman.y,
-									subnodes_ypac[i].x,
-									subnodes_ypac[i].y
-								);
-								let dist2 = distBetweenPoints(
-									pacman.x,
-									pacman.y,
-									subnodes_ypac[index].x,
-									subnodes_ypac[index].y
-								);
-								if (
-									dist1 < pacnode_dist1 ||
-									dist2 < pacnode_dist1 ||
-									!pacnode_dist1
-								) {
-									pacnode1 = i;
-									pacnode2 = index;
-									pacnode_dist1 = dist1;
-									pacnode_dist2 = dist2;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	if (!pacnode_dist1) {
-		pacnode1 = pacnode_backup;
-		pacnode2 = pacnode_backup;
-		pacnode_dist1 = pacnode_backupdist;
-		pacnode_dist2 = pacnode_backupdist;
-	}
-
-	// move ghosts
-	if (pacman.isDead === false) {
+		// ghost collision
 		for (let i = 0; i < ghosts.length; i++) {
-			let ghostnode1;
-			let ghostnode2;
-			let ghostnode_dist1;
-			let ghostnode_dist2;
-			let ghostnode_backup = 0;
-			let ghostnode_backupdist = distBetweenPoints(
-				ghosts[i].x,
-				ghosts[i].y,
-				nodes[0].x,
-				nodes[0].y
+			// set variables for convenience
+			const uppery = pacman.y - PAC_SIZE;
+			const lowery = pacman.y + PAC_SIZE;
+			const rightx = pacman.x + PAC_SIZE;
+			const leftx = pacman.x - PAC_SIZE;
+			let ghost = ghosts[i];
+			// check if vertical falls within range
+			if (
+				ghost.y + PAC_SIZE + FUDGE >= uppery &&
+				ghost.y - PAC_SIZE - FUDGE <= lowery
+			) {
+				// check if horizontal falls within range
+				if (
+					ghost.x - PAC_SIZE - FUDGE <= rightx &&
+					ghost.x + PAC_SIZE + FUDGE >= leftx
+				) {
+					pacman.x = startx;
+					pacman.y = starty;
+					pacman.xv = 0;
+					pacman.yv = 0;
+					killPacman();
+				}
+			}
+		}
+
+		// draw pacman
+		if (!pacman.isDead) {
+			ctx.fillStyle = "yellow";
+			ctx.beginPath();
+			ctx.arc(
+				pacman.x,
+				pacman.y,
+				PAC_SIZE,
+				Math.PI / 2 + pacman.a,
+				(3 * Math.PI) / 2 + pacman.a
 			);
-			let subnodes_x = nodes.slice();
-			let subnodes_y = nodes.slice();
-			for (let j = 0; j < nodes.length; j++) {
-				let node_dist = distBetweenPoints(
+			ctx.fill();
+			ctx.beginPath();
+			ctx.moveTo(pacman.x, pacman.y);
+			ctx.lineTo(pacman.x, pacman.y - Math.cos(pacman.a) * PAC_SIZE);
+			ctx.arc(
+				pacman.x,
+				pacman.y,
+				PAC_SIZE,
+				(3 * Math.PI) / 2 + pacman.a,
+				2 * Math.PI - wakka + pacman.a
+			);
+			ctx.fill();
+			ctx.beginPath();
+			ctx.moveTo(pacman.x, pacman.y);
+			ctx.lineTo(pacman.x, pacman.y + Math.cos(pacman.a) * PAC_SIZE);
+			ctx.arc(
+				pacman.x,
+				pacman.y,
+				PAC_SIZE,
+				Math.PI / 2 + pacman.a,
+				wakka + pacman.a,
+				true
+			);
+			ctx.fill();
+		}
+
+		// check pellet collision
+		for (let i = 0; i < pellets.length; i++) {
+			let x = pacman.x;
+			let y = pacman.y;
+			let x2 = pellets[i].x;
+			let y2 = pellets[i].y;
+			if (distBetweenPoints(x, y, x2, y2) < PAC_SIZE + PEL_SIZE) {
+				pellets[i] = {};
+				score += POINTS_LEMON;
+			}
+		}
+
+		// draw pellets
+		if (!DEBUG) {
+			for (let i = 0; i < pellets.length; i++) {
+				let x = pellets[i].x;
+				let y = pellets[i].y;
+				ctx.fillStyle = "pink";
+				ctx.beginPath();
+				ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
+				ctx.fill();
+			}
+		}
+
+		// find pacman closest node
+		let pacnode1;
+		let pacnode_dist1;
+		let pacnode2;
+		let pacnode_dist2;
+		let pacnode_backup = 0;
+		let pacnode_backupdist = distBetweenPoints(
+			pacman.x,
+			pacman.y,
+			nodes[0].x,
+			nodes[0].y
+		);
+		let subnodes_xpac = nodes.slice();
+		let subnodes_ypac = nodes.slice();
+		for (let i = 0; i < nodes.length; i++) {
+			let node_dist = distBetweenPoints(
+				pacman.x,
+				pacman.y,
+				nodes[i].x,
+				nodes[i].y
+			);
+			if (node_dist < pacnode_backupdist) {
+				pacnode_backup = i;
+				pacnode_backupdist = node_dist;
+			}
+			// autocorrect to node when close
+			if (
+				Math.abs(nodes[i].x - pacman.x) < 1 &&
+				Math.abs(nodes[i].y - pacman.y) < 1
+			) {
+				pacnode1 = i;
+				pacnode2 = i;
+				pacnode_dist1 = 0;
+				pacnode_dist2 = 0;
+				// find nodes on the ghost axis
+			} else if (
+				Math.abs(nodes[i].x - pacman.x) >= 2 &&
+				Math.abs(nodes[i].y - pacman.y) >= 2
+			) {
+				subnodes_xpac[i] = [];
+				subnodes_ypac[i] = [];
+			} else if (
+				Math.abs(nodes[i].x - pacman.x) < 2 &&
+				Math.abs(nodes[i].y - pacman.y) >= 2
+			) {
+				subnodes_ypac[i] = [];
+			} else if (
+				Math.abs(nodes[i].x - pacman.x) >= 2 &&
+				Math.abs(nodes[i].y - pacman.y) < 2
+			) {
+				subnodes_xpac[i] = [];
+			}
+		}
+		// iterate over nodes with same x
+		for (let i = 0; i < subnodes_xpac.length; i++) {
+			let connections = subnodes_xpac[i].connections;
+			if (connections) {
+				for (let k = 0; k < connections.length; k++) {
+					let index = connections[k];
+					let connections2 = subnodes_xpac[index].connections;
+					if (connections2) {
+						for (let l = 0; l < connections2.length; l++) {
+							if (connections2[l] === i) {
+								if (
+									(pacman.y < subnodes_xpac[i].y &&
+										pacman.y > subnodes_xpac[index].y) ||
+									(pacman.y > subnodes_xpac[i].y &&
+										pacman.y < subnodes_xpac[index].y)
+								) {
+									let dist1 = distBetweenPoints(
+										pacman.x,
+										pacman.y,
+										subnodes_xpac[i].x,
+										subnodes_xpac[i].y
+									);
+									let dist2 = distBetweenPoints(
+										pacman.x,
+										pacman.y,
+										subnodes_xpac[index].x,
+										subnodes_xpac[index].y
+									);
+									if (
+										dist1 < pacnode_dist1 ||
+										dist2 < pacnode_dist1 ||
+										!pacnode_dist1
+									) {
+										pacnode1 = i;
+										pacnode2 = index;
+										pacnode_dist1 = dist1;
+										pacnode_dist2 = dist2;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		// iterate over nodes with same y
+		for (let i = 0; i < subnodes_ypac.length; i++) {
+			let connections = subnodes_ypac[i].connections;
+			if (connections) {
+				for (let k = 0; k < connections.length; k++) {
+					let index = connections[k];
+					let connections2 = subnodes_ypac[index].connections;
+					if (connections2) {
+						for (let l = 0; l < connections2.length; l++) {
+							if (connections2[l] === i) {
+								if (
+									(pacman.x < subnodes_ypac[i].x &&
+										pacman.x > subnodes_ypac[index].x) ||
+									(pacman.x > subnodes_ypac[i].x &&
+										pacman.x < subnodes_ypac[index].x)
+								) {
+									let dist1 = distBetweenPoints(
+										pacman.x,
+										pacman.y,
+										subnodes_ypac[i].x,
+										subnodes_ypac[i].y
+									);
+									let dist2 = distBetweenPoints(
+										pacman.x,
+										pacman.y,
+										subnodes_ypac[index].x,
+										subnodes_ypac[index].y
+									);
+									if (
+										dist1 < pacnode_dist1 ||
+										dist2 < pacnode_dist1 ||
+										!pacnode_dist1
+									) {
+										pacnode1 = i;
+										pacnode2 = index;
+										pacnode_dist1 = dist1;
+										pacnode_dist2 = dist2;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if (!pacnode_dist1) {
+			pacnode1 = pacnode_backup;
+			pacnode2 = pacnode_backup;
+			pacnode_dist1 = pacnode_backupdist;
+			pacnode_dist2 = pacnode_backupdist;
+		}
+
+		// move ghosts
+		if (pacman.isDead === false) {
+			for (let i = 0; i < ghosts.length; i++) {
+				let ghostnode1;
+				let ghostnode2;
+				let ghostnode_dist1;
+				let ghostnode_dist2;
+				let ghostnode_backup = 0;
+				let ghostnode_backupdist = distBetweenPoints(
 					ghosts[i].x,
 					ghosts[i].y,
-					nodes[j].x,
-					nodes[j].y
+					nodes[0].x,
+					nodes[0].y
 				);
-				if (node_dist < ghostnode_backupdist) {
-					ghostnode_backup = j;
-					ghostnode_backupdist = node_dist;
-				}
+				let subnodes_x = nodes.slice();
+				let subnodes_y = nodes.slice();
+				for (let j = 0; j < nodes.length; j++) {
+					let node_dist = distBetweenPoints(
+						ghosts[i].x,
+						ghosts[i].y,
+						nodes[j].x,
+						nodes[j].y
+					);
+					if (node_dist < ghostnode_backupdist) {
+						ghostnode_backup = j;
+						ghostnode_backupdist = node_dist;
+					}
 
-				// autocorrect to node when close
-				if (
-					Math.abs(nodes[j].x - ghosts[i].x) < 2 &&
-					Math.abs(nodes[j].y - ghosts[i].y) < 2
-				) {
-					ghostnode1 = j;
-					ghostnode2 = j;
-					ghostnode_dist1 = 0;
-					ghostnode_dist2 = 0;
-					// find nodes on the ghost axis
-				} else if (
-					Math.abs(nodes[j].x - ghosts[i].x) >= 2 &&
-					Math.abs(nodes[j].y - ghosts[i].y) >= 2
-				) {
-					subnodes_x[j] = [];
-					subnodes_y[j] = [];
-				} else if (
-					Math.abs(nodes[j].x - ghosts[i].x) < 2 &&
-					Math.abs(nodes[j].y - ghosts[i].y) >= 2
-				) {
-					subnodes_y[j] = [];
-				} else if (
-					Math.abs(nodes[j].x - ghosts[i].x) >= 2 &&
-					Math.abs(nodes[j].y - ghosts[i].y) < 2
-				) {
-					subnodes_x[j] = [];
+					// autocorrect to node when close
+					if (
+						Math.abs(nodes[j].x - ghosts[i].x) < 2 &&
+						Math.abs(nodes[j].y - ghosts[i].y) < 2
+					) {
+						ghostnode1 = j;
+						ghostnode2 = j;
+						ghostnode_dist1 = 0;
+						ghostnode_dist2 = 0;
+						// find nodes on the ghost axis
+					} else if (
+						Math.abs(nodes[j].x - ghosts[i].x) >= 2 &&
+						Math.abs(nodes[j].y - ghosts[i].y) >= 2
+					) {
+						subnodes_x[j] = [];
+						subnodes_y[j] = [];
+					} else if (
+						Math.abs(nodes[j].x - ghosts[i].x) < 2 &&
+						Math.abs(nodes[j].y - ghosts[i].y) >= 2
+					) {
+						subnodes_y[j] = [];
+					} else if (
+						Math.abs(nodes[j].x - ghosts[i].x) >= 2 &&
+						Math.abs(nodes[j].y - ghosts[i].y) < 2
+					) {
+						subnodes_x[j] = [];
+					}
 				}
-			}
-			// iterate over nodes with same x
-			for (let j = 0; j < subnodes_x.length; j++) {
-				let connections = subnodes_x[j].connections;
-				if (connections) {
-					for (let k = 0; k < connections.length; k++) {
-						let index = connections[k];
-						let connections2 = subnodes_x[index].connections;
-						if (connections2) {
-							for (let l = 0; l < connections2.length; l++) {
-								if (connections2[l] === j) {
-									if (
-										(ghosts[i].y < subnodes_x[j].y &&
-											ghosts[i].y >
-												subnodes_x[index].y) ||
-										(ghosts[i].y > subnodes_x[j].y &&
-											ghosts[i].y < subnodes_x[index].y)
-									) {
-										let dist1 = distBetweenPoints(
-											ghosts[i].x,
-											ghosts[i].y,
-											subnodes_x[index].x,
-											subnodes_x[index].y
-										);
-										let dist2 = distBetweenPoints(
-											ghosts[i].x,
-											ghosts[i].y,
-											subnodes_x[index].x,
-											subnodes_x[index].y
-										);
+				// iterate over nodes with same x
+				for (let j = 0; j < subnodes_x.length; j++) {
+					let connections = subnodes_x[j].connections;
+					if (connections) {
+						for (let k = 0; k < connections.length; k++) {
+							let index = connections[k];
+							let connections2 = subnodes_x[index].connections;
+							if (connections2) {
+								for (let l = 0; l < connections2.length; l++) {
+									if (connections2[l] === j) {
 										if (
-											dist1 < ghostnode_dist1 ||
-											dist2 < ghostnode_dist1 ||
-											!ghostnode_dist1
+											(ghosts[i].y < subnodes_x[j].y &&
+												ghosts[i].y >
+													subnodes_x[index].y) ||
+											(ghosts[i].y > subnodes_x[j].y &&
+												ghosts[i].y <
+													subnodes_x[index].y)
 										) {
-											ghostnode1 = i;
-											ghostnode2 = index;
-											ghostnode_dist1 = dist1;
-											ghostnode_dist2 = dist2;
+											let dist1 = distBetweenPoints(
+												ghosts[i].x,
+												ghosts[i].y,
+												subnodes_x[index].x,
+												subnodes_x[index].y
+											);
+											let dist2 = distBetweenPoints(
+												ghosts[i].x,
+												ghosts[i].y,
+												subnodes_x[index].x,
+												subnodes_x[index].y
+											);
+											if (
+												dist1 < ghostnode_dist1 ||
+												dist2 < ghostnode_dist1 ||
+												!ghostnode_dist1
+											) {
+												ghostnode1 = i;
+												ghostnode2 = index;
+												ghostnode_dist1 = dist1;
+												ghostnode_dist2 = dist2;
+											}
 										}
 									}
 								}
@@ -1434,45 +1453,46 @@ function update() {
 						}
 					}
 				}
-			}
-			// iterate over nodes with same y
-			for (let j = 0; j < subnodes_y.length; j++) {
-				let connections = subnodes_y[j].connections;
-				if (connections) {
-					for (let k = 0; k < connections.length; k++) {
-						let index = connections[k];
-						let connections2 = subnodes_y[index].connections;
-						if (connections2) {
-							for (let l = 0; l < connections2.length; l++) {
-								if (connections2[l] === j) {
-									if (
-										(ghosts[i].x < subnodes_y[j].x &&
-											ghosts[i].x >
-												subnodes_y[index].x) ||
-										(ghosts[i].x > subnodes_y[j].x &&
-											ghosts[i].x < subnodes_y[index].x)
-									) {
-										let dist1 = distBetweenPoints(
-											ghosts[i].x,
-											ghosts[i].y,
-											subnodes_y[index].x,
-											subnodes_y[index].y
-										);
-										let dist2 = distBetweenPoints(
-											ghosts[i].x,
-											ghosts[i].y,
-											subnodes_y[index].x,
-											subnodes_y[index].y
-										);
+				// iterate over nodes with same y
+				for (let j = 0; j < subnodes_y.length; j++) {
+					let connections = subnodes_y[j].connections;
+					if (connections) {
+						for (let k = 0; k < connections.length; k++) {
+							let index = connections[k];
+							let connections2 = subnodes_y[index].connections;
+							if (connections2) {
+								for (let l = 0; l < connections2.length; l++) {
+									if (connections2[l] === j) {
 										if (
-											dist1 < ghostnode_dist1 ||
-											dist2 < ghostnode_dist1 ||
-											!ghostnode_dist1
+											(ghosts[i].x < subnodes_y[j].x &&
+												ghosts[i].x >
+													subnodes_y[index].x) ||
+											(ghosts[i].x > subnodes_y[j].x &&
+												ghosts[i].x <
+													subnodes_y[index].x)
 										) {
-											ghostnode1 = i;
-											ghostnode2 = index;
-											ghostnode_dist1 = dist1;
-											ghostnode_dist2 = dist2;
+											let dist1 = distBetweenPoints(
+												ghosts[i].x,
+												ghosts[i].y,
+												subnodes_y[index].x,
+												subnodes_y[index].y
+											);
+											let dist2 = distBetweenPoints(
+												ghosts[i].x,
+												ghosts[i].y,
+												subnodes_y[index].x,
+												subnodes_y[index].y
+											);
+											if (
+												dist1 < ghostnode_dist1 ||
+												dist2 < ghostnode_dist1 ||
+												!ghostnode_dist1
+											) {
+												ghostnode1 = i;
+												ghostnode2 = index;
+												ghostnode_dist1 = dist1;
+												ghostnode_dist2 = dist2;
+											}
 										}
 									}
 								}
@@ -1480,266 +1500,282 @@ function update() {
 						}
 					}
 				}
-			}
-			if (!ghostnode_dist1) {
-				ghostnode1 = ghostnode_backup;
-				ghostnode2 = ghostnode_backup;
-				ghostnode_dist1 = ghostnode_backupdist;
-				ghostnode_dist2 = ghostnode_backupdist;
-			}
+				if (!ghostnode_dist1) {
+					ghostnode1 = ghostnode_backup;
+					ghostnode2 = ghostnode_backup;
+					ghostnode_dist1 = ghostnode_backupdist;
+					ghostnode_dist2 = ghostnode_backupdist;
+				}
 
-			// shortest path
-			// ghostnode1, ghostnode2 = closest nodes to ghost
-			// ghostnode_dist1, ghostnode_dist2 = distance from ghost to closest nodes
-			// pacnode1, pacnode2 = closest nodes to pacman
-			// pacnode_dist1, pacnode_dist2 = distance from pacman to closest nodes
-			let distance_array = nodes.slice();
-			for (let j = 0; j < distance_array.length; j++) {
-				distance_array[j] = { visited: false, dist: 100000, path: [] };
-			}
-			distance_array[ghostnode1].visited = true;
-			distance_array[ghostnode1].dist = ghostnode_dist1;
-			let subarray = nodes[ghostnode1].connections;
-			for (let j = 0; j < subarray.length; j++) {
-				let working_node = subarray[j];
-				distance_array[working_node].dist =
-					distance_array[ghostnode1].dist +
-					distBetweenPoints(
-						nodes[ghostnode1].x,
-						nodes[ghostnode1].y,
-						nodes[working_node].x,
-						nodes[working_node].y
-					);
-				distance_array[working_node].path = [ghostnode1];
-			}
-			distance_array[ghostnode2].visited = true;
-			distance_array[ghostnode2].dist = ghostnode_dist1;
-			subarray = nodes[ghostnode2].connections;
-			for (let j = 0; j < subarray.length; j++) {
-				let working_node = subarray[j];
-				let working_dist =
-					distance_array[ghostnode2].dist +
-					distBetweenPoints(
-						nodes[ghostnode2].x,
-						nodes[ghostnode2].y,
-						nodes[working_node].x,
-						nodes[working_node].y
-					);
-				if (working_dist < distance_array[working_node].dist) {
-					distance_array[working_node].dist = working_dist;
-					distance_array[working_node].path = [ghostnode2];
+				// shortest path
+				// ghostnode1, ghostnode2 = closest nodes to ghost
+				// ghostnode_dist1, ghostnode_dist2 = distance from ghost to closest nodes
+				// pacnode1, pacnode2 = closest nodes to pacman
+				// pacnode_dist1, pacnode_dist2 = distance from pacman to closest nodes
+				let distance_array = nodes.slice();
+				for (let j = 0; j < distance_array.length; j++) {
+					distance_array[j] = {
+						visited: false,
+						dist: 100000,
+						path: [],
+					};
 				}
-			}
-			// takes in distance_array and updates it
-			for (let j = 1; j < distance_array.length; j++) {
-				let shortest_id = 0;
-				let shortest_dist = 100000;
-				for (let k = 0; k < distance_array.length; k++) {
-					if (!distance_array[k].visited) {
-						if (distance_array[k].dist < shortest_dist) {
-							shortest_id = k;
-							shortest_dist = distance_array[k].dist;
-						}
-					}
-				}
-				let shortest_subarray = nodes[shortest_id].connections;
-				for (let k = 0; k < shortest_subarray.length; k++) {
-					let working_node = shortest_subarray[k];
-					let working_dist =
-						distance_array[shortest_id].dist +
+				distance_array[ghostnode1].visited = true;
+				distance_array[ghostnode1].dist = ghostnode_dist1;
+				let subarray = nodes[ghostnode1].connections;
+				for (let j = 0; j < subarray.length; j++) {
+					let working_node = subarray[j];
+					distance_array[working_node].dist =
+						distance_array[ghostnode1].dist +
 						distBetweenPoints(
-							nodes[shortest_id].x,
-							nodes[shortest_id].y,
+							nodes[ghostnode1].x,
+							nodes[ghostnode1].y,
+							nodes[working_node].x,
+							nodes[working_node].y
+						);
+					distance_array[working_node].path = [ghostnode1];
+				}
+				distance_array[ghostnode2].visited = true;
+				distance_array[ghostnode2].dist = ghostnode_dist1;
+				subarray = nodes[ghostnode2].connections;
+				for (let j = 0; j < subarray.length; j++) {
+					let working_node = subarray[j];
+					let working_dist =
+						distance_array[ghostnode2].dist +
+						distBetweenPoints(
+							nodes[ghostnode2].x,
+							nodes[ghostnode2].y,
 							nodes[working_node].x,
 							nodes[working_node].y
 						);
 					if (working_dist < distance_array[working_node].dist) {
 						distance_array[working_node].dist = working_dist;
-						distance_array[working_node].path =
-							distance_array[shortest_id].path.slice();
-						distance_array[working_node].path.push(shortest_id);
+						distance_array[working_node].path = [ghostnode2];
 					}
 				}
-				distance_array[shortest_id].visited = true;
-			}
-
-			let final_dist1 = distance_array[pacnode1].dist + pacnode_dist1;
-			let final_dist2 = distance_array[pacnode2].dist + pacnode_dist2;
-			if (final_dist1 < final_dist2) {
-				node_final = pacnode1;
-			} else {
-				node_final = pacnode2;
-			}
-
-			let node_first = distance_array[node_final].path[0];
-			let node_second = distance_array[node_final].path[1];
-			let node_id = node_first;
-
-			if (node_second) {
-				if (
-					distBetweenPoints(
-						ghosts[i].x,
-						ghosts[i].y,
-						nodes[node_second].x,
-						nodes[node_second].y
-					) -
-						0.01 <
-					distBetweenPoints(
-						nodes[node_first].x,
-						nodes[node_first].y,
-						nodes[node_second].x,
-						nodes[node_second].y
-					)
-				) {
-					node_id = node_second;
+				// takes in distance_array and updates it
+				for (let j = 1; j < distance_array.length; j++) {
+					let shortest_id = 0;
+					let shortest_dist = 100000;
+					for (let k = 0; k < distance_array.length; k++) {
+						if (!distance_array[k].visited) {
+							if (distance_array[k].dist < shortest_dist) {
+								shortest_id = k;
+								shortest_dist = distance_array[k].dist;
+							}
+						}
+					}
+					let shortest_subarray = nodes[shortest_id].connections;
+					for (let k = 0; k < shortest_subarray.length; k++) {
+						let working_node = shortest_subarray[k];
+						let working_dist =
+							distance_array[shortest_id].dist +
+							distBetweenPoints(
+								nodes[shortest_id].x,
+								nodes[shortest_id].y,
+								nodes[working_node].x,
+								nodes[working_node].y
+							);
+						if (working_dist < distance_array[working_node].dist) {
+							distance_array[working_node].dist = working_dist;
+							distance_array[working_node].path =
+								distance_array[shortest_id].path.slice();
+							distance_array[working_node].path.push(shortest_id);
+						}
+					}
+					distance_array[shortest_id].visited = true;
 				}
-			} else {
-				node_id = node_final;
-			}
 
-			// move towards closest node
-			if (node_id) {
-				if (nodes[node_id].x - ghosts[i].x != 0) {
-					ghosts[i].xv =
-						(GHOST_SPD *
-							GLOBAL_SPD *
-							Math.abs(nodes[node_id].x - ghosts[i].x)) /
-						(nodes[node_id].x - ghosts[i].x);
+				let final_dist1 = distance_array[pacnode1].dist + pacnode_dist1;
+				let final_dist2 = distance_array[pacnode2].dist + pacnode_dist2;
+				if (final_dist1 < final_dist2) {
+					node_final = pacnode1;
+				} else {
+					node_final = pacnode2;
 				}
-				if (nodes[node_id].y - ghosts[i].y != 0) {
-					ghosts[i].yv =
-						(GHOST_SPD *
-							GLOBAL_SPD *
-							Math.abs(nodes[node_id].y - ghosts[i].y)) /
-						(nodes[node_id].y - ghosts[i].y);
+
+				let node_first = distance_array[node_final].path[0];
+				let node_second = distance_array[node_final].path[1];
+				let node_id = node_first;
+
+				if (node_second) {
+					if (
+						distBetweenPoints(
+							ghosts[i].x,
+							ghosts[i].y,
+							nodes[node_second].x,
+							nodes[node_second].y
+						) -
+							0.01 <
+						distBetweenPoints(
+							nodes[node_first].x,
+							nodes[node_first].y,
+							nodes[node_second].x,
+							nodes[node_second].y
+						)
+					) {
+						node_id = node_second;
+					}
+				} else {
+					node_id = node_final;
 				}
-			}
 
-			ghosts[i].x += ghosts[i].xv / FPS;
-			ghosts[i].y += ghosts[i].yv / FPS;
+				if (DEBUG) {
+					ctx.fillStyle = ghosts[i].color;
+					ctx.beginPath();
+					ctx.arc(
+						nodes[node_id].x,
+						nodes[node_id].y,
+						GHOST_SIZE / 2,
+						0,
+						Math.PI * 2
+					);
+				}
+				ctx.fill();
+				// move towards closest node
+				if (node_id) {
+					if (nodes[node_id].x - ghosts[i].x != 0) {
+						ghosts[i].xv =
+							(GHOST_SPD *
+								GLOBAL_SPD *
+								Math.abs(nodes[node_id].x - ghosts[i].x)) /
+							(nodes[node_id].x - ghosts[i].x);
+					}
+					if (nodes[node_id].y - ghosts[i].y != 0) {
+						ghosts[i].yv =
+							(GHOST_SPD *
+								GLOBAL_SPD *
+								Math.abs(nodes[node_id].y - ghosts[i].y)) /
+							(nodes[node_id].y - ghosts[i].y);
+					}
+				}
 
-			// detect ghost collisions
-			for (let j = 0; j < ghosts.length; j++) {
-				if (j === i) {
-				} else if (
-					distBetweenPoints(
-						ghosts[i].x,
-						ghosts[i].y,
-						ghosts[j].x,
-						ghosts[j].y
-					) <
-					2 * GHOST_SIZE
-				) {
-					console.log(
+				ghosts[i].x += ghosts[i].xv / FPS;
+				ghosts[i].y += ghosts[i].yv / FPS;
+
+				// detect ghost collisions
+				for (let j = 0; j < ghosts.length; j++) {
+					if (j === i) {
+					} else if (
 						distBetweenPoints(
 							ghosts[i].x,
 							ghosts[i].y,
 							ghosts[j].x,
 							ghosts[j].y
-						)
-					);
-					ghosts[i].x -= (2 * ghosts[i].xv) / FPS;
-					ghosts[i].y -= (2 * ghosts[i].yv) / FPS;
+						) <
+						2 * GHOST_SIZE
+					) {
+						console.log(
+							distBetweenPoints(
+								ghosts[i].x,
+								ghosts[i].y,
+								ghosts[j].x,
+								ghosts[j].y
+							)
+						);
+						ghosts[i].x -= (2 * ghosts[i].xv) / FPS;
+						ghosts[i].y -= (2 * ghosts[i].yv) / FPS;
+					}
 				}
 			}
 		}
-	}
 
-	// draw ghosts
-	for (let i = 0; i < ghosts.length; i++) {
-		let x = ghosts[i].x;
-		let y = ghosts[i].y;
-		let color = ghosts[i].color;
+		// draw ghosts
+		for (let i = 0; i < ghosts.length; i++) {
+			let x = ghosts[i].x;
+			let y = ghosts[i].y;
+			let color = ghosts[i].color;
 
-		ctx.fillStyle = color;
-		ctx.beginPath();
-		ctx.arc(x, y, GHOST_SIZE, Math.PI, Math.PI * 2);
-		ctx.fill();
-		ctx.moveTo(x - GHOST_SIZE, y);
-		ctx.lineTo(x - GHOST_SIZE, y + GHOST_SIZE);
-		ctx.lineTo(x - GHOST_SIZE / 2, y + GHOST_SIZE / 3);
-		ctx.lineTo(x, y + GHOST_SIZE);
-		ctx.lineTo(x + GHOST_SIZE / 2, y + GHOST_SIZE / 3);
-		ctx.lineTo(x + GHOST_SIZE, y + GHOST_SIZE);
-		ctx.lineTo(x + GHOST_SIZE, y);
-		ctx.fill();
-	}
-
-	// draw nodes
-	if (DEBUG) {
-		for (let i = 0; i < nodes.length; i++) {
-			let x = nodes[i].x;
-			let y = nodes[i].y;
-			let connections = nodes[i].connections;
-			ctx.fillStyle = "pink";
+			ctx.fillStyle = color;
 			ctx.beginPath();
-			ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
+			ctx.arc(x, y, GHOST_SIZE, Math.PI, Math.PI * 2);
 			ctx.fill();
-			for (let j = 0; j < connections.length; j++) {
-				let index = connections[j];
-				// if (index > i) {
-				let x2 = nodes[index].x;
-				let y2 = nodes[index].y;
-				ctx.strokeStyle = "pink";
-				ctx.moveTo(x, y);
-				ctx.lineTo(x2, y2);
-				ctx.stroke();
-				//}
+			ctx.moveTo(x - GHOST_SIZE, y);
+			ctx.lineTo(x - GHOST_SIZE, y + GHOST_SIZE);
+			ctx.lineTo(x - GHOST_SIZE / 2, y + GHOST_SIZE / 3);
+			ctx.lineTo(x, y + GHOST_SIZE);
+			ctx.lineTo(x + GHOST_SIZE / 2, y + GHOST_SIZE / 3);
+			ctx.lineTo(x + GHOST_SIZE, y + GHOST_SIZE);
+			ctx.lineTo(x + GHOST_SIZE, y);
+			ctx.fill();
+		}
+
+		// draw nodes
+		if (DEBUG) {
+			for (let i = 0; i < nodes.length; i++) {
+				let x = nodes[i].x;
+				let y = nodes[i].y;
+				let connections = nodes[i].connections;
+				ctx.fillStyle = "pink";
+				ctx.beginPath();
+				ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
+				ctx.fill();
+				for (let j = 0; j < connections.length; j++) {
+					let index = connections[j];
+					// if (index > i) {
+					let x2 = nodes[index].x;
+					let y2 = nodes[index].y;
+					ctx.strokeStyle = "pink";
+					ctx.moveTo(x, y);
+					ctx.lineTo(x2, y2);
+					ctx.stroke();
+					//}
+				}
 			}
 		}
-	}
 
-	// draw walls
-	for (let i = 0; i < walls.length; i++) {
-		let wall = walls[i];
-		ctx.fillStyle = "blue";
-		if (wall.dir) {
-			ctx.beginPath();
-			ctx.moveTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
-			ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y - wall.dim / 2);
-			ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y - wall.dim / 2);
-			ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y + wall.dim / 2);
-			ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
-			ctx.fill();
-		} else {
-			ctx.beginPath();
-			ctx.moveTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
-			ctx.lineTo(wall.x - wall.dim / 2, wall.y - WALL_WIDTH / 2);
-			ctx.lineTo(wall.x + wall.dim / 2, wall.y - WALL_WIDTH / 2);
-			ctx.lineTo(wall.x + wall.dim / 2, wall.y + WALL_WIDTH / 2);
-			ctx.lineTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
-			ctx.fill();
+		// draw walls
+		for (let i = 0; i < walls.length; i++) {
+			let wall = walls[i];
+			ctx.fillStyle = "blue";
+			if (wall.dir) {
+				ctx.beginPath();
+				ctx.moveTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
+				ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y - wall.dim / 2);
+				ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y - wall.dim / 2);
+				ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y + wall.dim / 2);
+				ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
+				ctx.fill();
+			} else {
+				ctx.beginPath();
+				ctx.moveTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
+				ctx.lineTo(wall.x - wall.dim / 2, wall.y - WALL_WIDTH / 2);
+				ctx.lineTo(wall.x + wall.dim / 2, wall.y - WALL_WIDTH / 2);
+				ctx.lineTo(wall.x + wall.dim / 2, wall.y + WALL_WIDTH / 2);
+				ctx.lineTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
+				ctx.fill();
+			}
 		}
-	}
 
-	// draw game text
-	if (text) {
+		// draw game text
+		if (text) {
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.fillStyle = "white";
+			ctx.font = "small-caps " + TEXT_SIZE + "px dejavu sans mono";
+			ctx.fillText(text, canv.width / 2, canv.height * 0.75);
+			ctx.fillText(text2, canv.width / 2, canv.height * 0.75 + TEXT_SIZE);
+		}
+
+		// draw score
+		ctx.textAlign = "right";
+		ctx.textBaseline = "middle";
+		ctx.fillStyle = "white";
+		ctx.font = TEXT_SIZE + "px dejavu sans mono";
+		ctx.fillText(score, canv.width - PAC_SIZE / 2, 1.5 * PAC_SIZE);
+
+		// draw high score
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
 		ctx.fillStyle = "white";
-		ctx.font = "small-caps " + TEXT_SIZE + "px dejavu sans mono";
-		ctx.fillText(text, canv.width / 2, canv.height * 0.75);
-		ctx.fillText(text2, canv.width / 2, canv.height * 0.75 + TEXT_SIZE);
+		ctx.font = TEXT_SIZE * 0.75 + "px dejavu sans mono";
+		ctx.fillText("BEST: " + scoreHigh, canv.width / 2, 1.5 * PAC_SIZE);
+
+		// draw lives
+		ctx.textAlign = "left";
+		ctx.textBaseline = "middle";
+		ctx.fillStyle = "white";
+		ctx.font = TEXT_SIZE * 0.75 + "px dejavu sans mono";
+		ctx.fillText("LIVES: " + lives, PAC_SIZE, 1.5 * PAC_SIZE);
 	}
-
-	// draw score
-	ctx.textAlign = "right";
-	ctx.textBaseline = "middle";
-	ctx.fillStyle = "white";
-	ctx.font = TEXT_SIZE + "px dejavu sans mono";
-	ctx.fillText(score, canv.width - PAC_SIZE / 2, 1.5 * PAC_SIZE);
-
-	// draw high score
-	ctx.textAlign = "center";
-	ctx.textBaseline = "middle";
-	ctx.fillStyle = "white";
-	ctx.font = TEXT_SIZE * 0.75 + "px dejavu sans mono";
-	ctx.fillText("BEST: " + scoreHigh, canv.width / 2, 1.5 * PAC_SIZE);
-
-	// draw lives
-	ctx.textAlign = "left";
-	ctx.textBaseline = "middle";
-	ctx.fillStyle = "white";
-	ctx.font = TEXT_SIZE * 0.75 + "px dejavu sans mono";
-	ctx.fillText("LIVES: " + lives, PAC_SIZE, 1.5 * PAC_SIZE);
 }
