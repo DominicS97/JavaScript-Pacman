@@ -1,8 +1,8 @@
 // set constants
 const FPS = 60; // framerate
 const FUDGE = 0; // collision fudger px
-const KNOCK = 1; // collision knockback px
-const ALLOW = 10; // collision allowance px
+const KNOCK = 2; // collision knockback px
+const ALLOW = 8; // collision allowance px
 const PAC_SIZE = 16; // pacman radius px
 const PAC_SPD = 150; // pacman speed modifier
 const GLOBAL_SPD = 1; // global speed modifier
@@ -34,8 +34,7 @@ class Wall {
 	}
 }
 
-var level,
-	ghosts = [],
+var ghosts = [],
 	pacman,
 	startx = canv.width / 2,
 	starty = canv.height / 2 + 60,
@@ -114,8 +113,9 @@ function distBetweenPoints(x1, y1, x2, y2) {
 	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
-// total width of passage = 38px // true = vertical, false = horizontal
+// initialise level
 function createLevel() {
+	// build walls
 	const wall1 = new Wall(
 		canv.width / 2 - 80,
 		canv.height / 2 - 0.5,
@@ -463,6 +463,7 @@ function createLevel() {
 		wall56,
 		wall57
 	);
+	// create ghosts
 	const ghost1 = {
 		x: canv.width / 2,
 		y: canv.height / 2 + 275,
@@ -486,6 +487,7 @@ function createLevel() {
 	};
 	ghosts = [];
 	ghosts.push(ghost1, ghost2, ghost3);
+	// create nodes for pathfinding and pellets
 	nodes = [];
 	nodes.push(
 		{
@@ -875,6 +877,7 @@ function createLevel() {
 			connections: [33, 60, 62],
 		}
 	);
+	// use nodes to fill in pellets
 	pellets = [];
 	for (let i = 0; i < nodes.length; i++) {
 		let x = nodes[i].x;
@@ -930,6 +933,7 @@ function createLevel() {
 	}
 }
 
+// start game
 const START_BUTTON = document.getElementById("start");
 function newGame() {
 	score = 0;
@@ -956,6 +960,7 @@ function newGame() {
 	}
 }
 
+// toggle debug features
 function toggleDebug() {
 	if (debug) {
 		debug = false;
@@ -964,6 +969,7 @@ function toggleDebug() {
 	}
 }
 
+// death function
 function killPacman() {
 	lives--;
 	if (lives === 0) {
@@ -976,7 +982,7 @@ function killPacman() {
 // draw game
 function update() {
 	if (started) {
-		// cycle wakka
+		// cycle pacman mouth
 		if (wakkaDir === 0 && wakka > 0) {
 			wakka = wakka - Math.PI / (WAKKA_SPD * FPS);
 		} else if (wakka <= 0) {
@@ -1040,44 +1046,45 @@ function update() {
 								wallrightx - leftx <= ALLOW &&
 								wallrightx - leftx > 0
 							) {
-								pacman.x += wallrightx - leftx + 1;
+								pacman.x += wallrightx - leftx + KNOCK;
 								allow = true;
 							} else if (
 								rightx - wallleftx <= ALLOW &&
 								rightx - wallleftx > 0
 							) {
-								pacman.x -= rightx - wallleftx + 1;
+								pacman.x -= rightx - wallleftx + KNOCK;
 								allow = true;
 							}
 						} else if (
 							(pacman.x > x1 && pacman.x > x2) ||
-							(pacman.x <= x1 && pacman.x <= x2)
+							(pacman.x < x1 && pacman.x < x2)
 						) {
 							if (
 								walllowery - uppery <= ALLOW &&
 								walllowery - uppery > 0
 							) {
-								pacman.y += walllowery - uppery + 1;
+								pacman.y += walllowery - uppery + KNOCK;
 								allow = true;
 							} else if (
 								lowery - walluppery <= ALLOW &&
 								lowery - walluppery > 0
 							) {
-								pacman.y -= lowery - walluppery + 1;
+								pacman.y -= lowery - walluppery + KNOCK;
 								allow = true;
 							}
 						}
+
+						// determine knockback dir
+						if (pacman.x > x1 && pacman.x > x2) {
+							pacman.x += KNOCK;
+						} else if (pacman.x > x1 && pacman.x < x2) {
+							pacman.y -= KNOCK;
+						} else if (pacman.x < x1 && pacman.x > x2) {
+							pacman.y += KNOCK;
+						} else {
+							pacman.x -= KNOCK;
+						}
 						if (allow === false) {
-							// determine knockback dir
-							if (pacman.x > x1 && pacman.x > x2) {
-								pacman.x += KNOCK;
-							} else if (pacman.x > x1 && pacman.x < x2) {
-								pacman.y -= KNOCK;
-							} else if (pacman.x < x1 && pacman.x > x2) {
-								pacman.y += KNOCK;
-							} else {
-								pacman.x -= KNOCK;
-							}
 							pacman.xv = 0;
 							pacman.yv = 0;
 							break;
