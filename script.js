@@ -1117,6 +1117,29 @@ function update() {
 		ctx.fillStyle = "black";
 		ctx.fillRect(0, 0, canv.width, canv.height);
 
+		// draw walls
+		for (let i = 0; i < walls.length; i++) {
+			let wall = walls[i];
+			ctx.fillStyle = "blue";
+			if (wall.dir) {
+				ctx.beginPath();
+				ctx.moveTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
+				ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y - wall.dim / 2);
+				ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y - wall.dim / 2);
+				ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y + wall.dim / 2);
+				ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
+				ctx.fill();
+			} else {
+				ctx.beginPath();
+				ctx.moveTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
+				ctx.lineTo(wall.x - wall.dim / 2, wall.y - WALL_WIDTH / 2);
+				ctx.lineTo(wall.x + wall.dim / 2, wall.y - WALL_WIDTH / 2);
+				ctx.lineTo(wall.x + wall.dim / 2, wall.y + WALL_WIDTH / 2);
+				ctx.lineTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
+				ctx.fill();
+			}
+		}
+
 		// ghost collision
 		for (let i = 0; i < ghosts.length; i++) {
 			// set variables for convenience
@@ -1209,6 +1232,31 @@ function update() {
 			}
 		}
 
+		// alternative debug feature
+		// draw nodes
+		// if (debug) {
+		// 	for (let i = 0; i < nodes.length; i++) {
+		// 		let x = nodes[i].x;
+		// 		let y = nodes[i].y;
+		// 		let connections = nodes[i].connections;
+		// 		ctx.fillStyle = "pink";
+		// 		ctx.beginPath();
+		// 		ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
+		// 		ctx.fill();
+		// 		for (let j = 0; j < connections.length; j++) {
+		// 			let index = connections[j];
+		// 			// if (index > i) {
+		// 			let x2 = nodes[index].x;
+		// 			let y2 = nodes[index].y;
+		// 			ctx.strokeStyle = "pink";
+		// 			ctx.moveTo(x, y);
+		// 			ctx.lineTo(x2, y2);
+		// 			ctx.stroke();
+		// 			//}
+		// 		}
+		// 	}
+		// }
+
 		// find pacman closest node
 		let pacnode1;
 		let pacnode_dist1;
@@ -1236,28 +1284,28 @@ function update() {
 			}
 			// autocorrect to node when close
 			if (
-				Math.abs(nodes[i].x - pacman.x) < 1 &&
-				Math.abs(nodes[i].y - pacman.y) < 1
+				Math.abs(nodes[i].x - pacman.x) < 5 &&
+				Math.abs(nodes[i].y - pacman.y) < 5
 			) {
 				pacnode1 = i;
 				pacnode2 = i;
 				pacnode_dist1 = 0;
 				pacnode_dist2 = 0;
-				// find nodes on the ghost axis
+				// find nodes on the pacman axis
 			} else if (
-				Math.abs(nodes[i].x - pacman.x) >= 2 &&
-				Math.abs(nodes[i].y - pacman.y) >= 2
+				Math.abs(nodes[i].x - pacman.x) >= 5 &&
+				Math.abs(nodes[i].y - pacman.y) >= 5
 			) {
 				subnodes_xpac[i] = [];
 				subnodes_ypac[i] = [];
 			} else if (
-				Math.abs(nodes[i].x - pacman.x) < 2 &&
-				Math.abs(nodes[i].y - pacman.y) >= 2
+				Math.abs(nodes[i].x - pacman.x) < 5 &&
+				Math.abs(nodes[i].y - pacman.y) >= 5
 			) {
 				subnodes_ypac[i] = [];
 			} else if (
-				Math.abs(nodes[i].x - pacman.x) >= 2 &&
-				Math.abs(nodes[i].y - pacman.y) < 2
+				Math.abs(nodes[i].x - pacman.x) >= 5 &&
+				Math.abs(nodes[i].y - pacman.y) < 5
 			) {
 				subnodes_xpac[i] = [];
 			}
@@ -1629,18 +1677,61 @@ function update() {
 					node_id = node_final;
 				}
 
+				// alternative debug feature
+				// if (debug) {
+				// 	ctx.fillStyle = ghosts[i].color;
+				// 	ctx.beginPath();
+				// 	ctx.arc(
+				// 		nodes[node_id].x,
+				// 		nodes[node_id].y,
+				// 		GHOST_SIZE / 2,
+				// 		0,
+				// 		Math.PI * 2
+				// 	);
+				// 	ctx.fill();
+				// 	ctx.fillStyle = "yellow";
+				// 	ctx.beginPath();
+				// 	ctx.arc(
+				// 		nodes[node_final].x,
+				// 		nodes[node_final].y,
+				// 		GHOST_SIZE / 2,
+				// 		0,
+				// 		Math.PI * 2
+				// 	);
+				// 	ctx.fill();
+				// }
+
 				if (debug) {
-					ctx.fillStyle = ghosts[i].color;
-					ctx.beginPath();
-					ctx.arc(
-						nodes[node_id].x,
-						nodes[node_id].y,
-						GHOST_SIZE / 2,
-						0,
-						Math.PI * 2
-					);
+					for (
+						let j = 0;
+						j < distance_array[node_final].path.length;
+						j++
+					) {
+						let n = distance_array[node_final].path[j];
+						let x = nodes[n].x;
+						let y = nodes[n].y;
+						ctx.fillStyle = ghosts[i].color;
+						ctx.beginPath();
+						ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
+						ctx.fill();
+						if (j === distance_array[node_final].path.length - 1) {
+							ctx.strokeStyle = ghosts[i].color;
+							ctx.moveTo(x, y);
+							ctx.lineTo(pacman.x, pacman.y);
+							ctx.stroke();
+						} else {
+							let k = j + 1;
+							let m = distance_array[node_final].path[k];
+							let x2 = nodes[m].x;
+							let y2 = nodes[m].y;
+							ctx.strokeStyle = ghosts[i].color;
+							ctx.moveTo(x, y);
+							ctx.lineTo(x2, y2);
+							ctx.stroke();
+						}
+					}
 				}
-				ctx.fill();
+
 				// move towards closest node
 				if (node_id) {
 					if (nodes[node_id].x - ghosts[i].x != 0) {
@@ -1707,53 +1798,6 @@ function update() {
 			ctx.lineTo(x + GHOST_SIZE, y + GHOST_SIZE);
 			ctx.lineTo(x + GHOST_SIZE, y);
 			ctx.fill();
-		}
-
-		// draw nodes
-		if (debug) {
-			for (let i = 0; i < nodes.length; i++) {
-				let x = nodes[i].x;
-				let y = nodes[i].y;
-				let connections = nodes[i].connections;
-				ctx.fillStyle = "pink";
-				ctx.beginPath();
-				ctx.arc(x, y, PEL_SIZE, 0, Math.PI * 2);
-				ctx.fill();
-				for (let j = 0; j < connections.length; j++) {
-					let index = connections[j];
-					// if (index > i) {
-					let x2 = nodes[index].x;
-					let y2 = nodes[index].y;
-					ctx.strokeStyle = "pink";
-					ctx.moveTo(x, y);
-					ctx.lineTo(x2, y2);
-					ctx.stroke();
-					//}
-				}
-			}
-		}
-
-		// draw walls
-		for (let i = 0; i < walls.length; i++) {
-			let wall = walls[i];
-			ctx.fillStyle = "blue";
-			if (wall.dir) {
-				ctx.beginPath();
-				ctx.moveTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
-				ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y - wall.dim / 2);
-				ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y - wall.dim / 2);
-				ctx.lineTo(wall.x + WALL_WIDTH / 2, wall.y + wall.dim / 2);
-				ctx.lineTo(wall.x - WALL_WIDTH / 2, wall.y + wall.dim / 2);
-				ctx.fill();
-			} else {
-				ctx.beginPath();
-				ctx.moveTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
-				ctx.lineTo(wall.x - wall.dim / 2, wall.y - WALL_WIDTH / 2);
-				ctx.lineTo(wall.x + wall.dim / 2, wall.y - WALL_WIDTH / 2);
-				ctx.lineTo(wall.x + wall.dim / 2, wall.y + WALL_WIDTH / 2);
-				ctx.lineTo(wall.x - wall.dim / 2, wall.y + WALL_WIDTH / 2);
-				ctx.fill();
-			}
 		}
 
 		// draw game text
