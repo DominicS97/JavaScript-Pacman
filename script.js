@@ -8,17 +8,16 @@ const PAC_SPD = 150; // pacman speed modifier
 const GLOBAL_SPD = 1; // global speed modifier
 const WAKKA_SPD = 1.6; // wakka speed (lower = faster)
 const GHOST_NUM = 3; // starting number of ghosts
-const GHOST_SIZE = PAC_SIZE; // ghost radius px
-const GHOST_SPD = 100; // ghost speed
-const PEL_SIZE = PAC_SIZE / 6; // pellet radius px
-const PEL_DIST = PAC_SIZE / 4; // pellet distance between px
+const GHOST_SIZE = 16; // ghost radius px
+const GHOST_SPD = 90; // ghost speed
+const PEL_SIZE = 2.5; // pellet radius px
+const PEL_DIST = 4; // pellet distance between px
 const WALL_WIDTH = 16; // wall width px
-const GAME_LIVES = 3; // start no lives
-const SHOW_BOUNDING = false; // show collision
+const GAME_LIVES = 3; // starting number of lives
 const TEXT_SIZE = 40; // text font-size / px
 const POINTS_LEMON = 20; // points for collecting lemon
-const POINTS_CHERRY = 50; // points for collecting cherry
-const POINTS_GHOST = 100; // points for destroying ghost
+// const POINTS_CHERRY = 50; // points for collecting cherry unused
+// const POINTS_GHOST = 100; // points for destroying ghost unused
 const SAVE_KEY_SCORE = "highscore"; // save key for local storage of high score
 
 /** @type {HTMLCanvasElement} */
@@ -40,13 +39,11 @@ var level,
 	pacman,
 	startx = canv.width / 2,
 	starty = canv.height / 2 + 60,
-	lives,
 	walls = [],
 	nodes = [],
 	pellets = [],
 	text,
 	text2,
-	textAlpha,
 	lives,
 	score,
 	scoreHigh,
@@ -54,9 +51,10 @@ var level,
 	keyUp,
 	wakka = Math.PI / 4,
 	wakkaDir = 0,
-	DEBUG = false, // displays debug info
-	STARTED = false;
+	debug = false, // displays debug info
+	started = false;
 
+// initialise player character
 pacman = {
 	x: startx,
 	y: starty,
@@ -946,7 +944,7 @@ function newGame() {
 	pacman.isDead = false;
 	pacman.isInvuln = false;
 	START_BUTTON.onclick = "";
-	STARTED = true;
+	started = true;
 	createLevel();
 
 	// get high score from local
@@ -959,10 +957,10 @@ function newGame() {
 }
 
 function toggleDebug() {
-	if (DEBUG) {
-		DEBUG = false;
+	if (debug) {
+		debug = false;
 	} else {
-		DEBUG = true;
+		debug = true;
 	}
 }
 
@@ -977,7 +975,7 @@ function killPacman() {
 
 // draw game
 function update() {
-	if (STARTED) {
+	if (started) {
 		// cycle wakka
 		if (wakkaDir === 0 && wakka > 0) {
 			wakka = wakka - Math.PI / (WAKKA_SPD * FPS);
@@ -1193,7 +1191,7 @@ function update() {
 		}
 
 		// draw pellets
-		if (!DEBUG) {
+		if (!debug) {
 			for (let i = 0; i < pellets.length; i++) {
 				let x = pellets[i].x;
 				let y = pellets[i].y;
@@ -1624,7 +1622,7 @@ function update() {
 					node_id = node_final;
 				}
 
-				if (DEBUG) {
+				if (debug) {
 					ctx.fillStyle = ghosts[i].color;
 					ctx.beginPath();
 					ctx.arc(
@@ -1705,7 +1703,7 @@ function update() {
 		}
 
 		// draw nodes
-		if (DEBUG) {
+		if (debug) {
 			for (let i = 0; i < nodes.length; i++) {
 				let x = nodes[i].x;
 				let y = nodes[i].y;
