@@ -17,3 +17,5 @@ Pacman created in JavaScript.
     Uses Djikstra's algorithm to find the shortest path to the player for each ghost.
 
     This requires the ghost to skip the first node in sequence when close to it, to avoid getting stuck there.
+
+    I've also implemented debugging features to make the pathfinding easier to test and improve.
